@@ -33,11 +33,14 @@ This script relies on curl for the requests to the api and jq to parse the json 
    ```sh
    git clone https://github.com/0xacx/chatgptcli.git
    ```
-
+4. You might need to change the permissions of the file
+   ```sh
+   chmod +x chatgpt.sh
+   ```
 <!-- USAGE EXAMPLES -->
 ## Usage
 
   Run the script
     ```
-    ./chatgptcli/chatgpt.sh
+    ./chatgpt.sh
     ```
