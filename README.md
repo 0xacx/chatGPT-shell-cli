@@ -19,8 +19,6 @@ This script relies on curl for the requests to the api and jq to parse the json 
 
 ### Installation
 
-_Below is an example of how you can instruct your audience on installing and setting up your app. This template doesn't rely on any external dependencies or services._
-
 1. Create an account and get a free API Key at [OpenAI](https://openai.com/api/)
 2. To add the key to your enviroment variables, you need to add this line to your `~/.bash_profile` or `~/.zprofile`.
    ```sh
