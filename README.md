@@ -24,7 +24,7 @@ This script relies on curl for the requests to the api and jq to parse the json 
 
 ### Installation
 
-1. Create an account and get a free API Key at [OpenAI](https://openai.com/api/)
+1. Create an account and get a free API Key at [OpenAI](https://beta.openai.com/account/api-keys)
 2. To add the key to your enviroment variables, you need to add this line to your `~/.bash_profile` or `~/.zprofile`.
    ```sh
    export OPENAI_TOKEN=yourkey
