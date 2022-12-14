@@ -1,3 +1,5 @@
+![shell](https://user-images.githubusercontent.com/99351112/207697723-a3fabc0b-f067-4f83-96fd-1f7225a0bb38.svg)
+
 # Chatgpt-cli
 
 A simple shell script to use OpenAI's chatgpt from the terminal without installing python or node.
