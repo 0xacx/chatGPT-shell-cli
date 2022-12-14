@@ -1,6 +1,6 @@
 # Chatgpt-cli
 
-A simple shell cli to use OpenAI's chatgpt from the terminal without installing python or node.
+A simple shell script to use OpenAI's chatgpt from the terminal without installing python or node.
 The script uses the `completion` endpoint and the "text-davinci-003" model.
 
 ## Getting Started
