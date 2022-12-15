@@ -16,7 +16,7 @@ while $running; do
   		-d '{
   			"model": "text-davinci-003",
   			"prompt": "'"${command}"'",
-  			"max_tokens": 2048,
+  			"max_tokens": 1000,
   			"temperature": 0.7
 	}' | jq -r '.choices[].text' | awk '{ printf "%s", $0 }')
 	
