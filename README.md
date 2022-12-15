@@ -34,7 +34,7 @@ This script relies on curl for the requests to the api and jq to parse the json 
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-  Run the script by using the command chatgpt `command` anywhere.
+  Run the script by using the `chatgpt` command anywhere.
     ```
     chatgpt
     ```
