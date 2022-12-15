@@ -5,7 +5,7 @@
 A simple shell script to use OpenAI's chatgpt from the terminal without installing python or node.
 The script uses the `completion` endpoint and the `text-davinci-003` model.
 
-![Screenshot](https://user-images.githubusercontent.com/99351112/207676114-3d2c934f-68a7-40cc-b113-df9c4e8f25c7.png)
+![Screenshot 2022-12-15 at 17 20 15](https://user-images.githubusercontent.com/99351112/207898587-1fb405c9-02c6-47c0-b433-7110634810f7.png)
 
 ## Getting Started
 
