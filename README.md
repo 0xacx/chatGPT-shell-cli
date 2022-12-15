@@ -21,26 +21,20 @@ This script relies on curl for the requests to the api and jq to parse the json 
   ```sh
   brew install jq
   ```
+* Create an account and get a free API Key at [OpenAI](https://beta.openai.com/account/api-keys)
 
 ### Installation
 
-1. Create an account and get a free API Key at [OpenAI](https://beta.openai.com/account/api-keys)
-2. To add the key to your enviroment variables, you need to add this line to your `~/.bash_profile` or `~/.zprofile`.
+   To install, run this in your terminal and provide your OpenAI API key when asked.
+   
    ```sh
-   export OPENAI_TOKEN=yourkey
+   curl -sS https://raw.githubusercontent.com/0xacx/chatgptcli/main/install.sh | sudo -E bash
    ```
-3. Clone the repo
-   ```sh
-   git clone https://github.com/0xacx/chatgptcli.git
-   ```
-4. You might need to change the permissions of the file
-   ```sh
-   chmod +x chatgpt.sh
-   ```
+   
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-  Run the script
+  Run the script by using the command chatgpt `command` anywhere.
     ```
-    ./chatgpt.sh
+    chatgpt
     ```
