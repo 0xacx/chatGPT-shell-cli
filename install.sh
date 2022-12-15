@@ -29,7 +29,7 @@ fi
 
 chmod +x /usr/local/bin/chatgpt
 
-read -p "Please enter your OpenAi API key: " token
+read -p "Please enter your OpenAI API key: " token
 
 # Adding OpenAI token to shell profile
 if [ -f ~/.zprofile ]; then
