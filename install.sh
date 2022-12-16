@@ -24,7 +24,7 @@ if [ -f chatgpt.sh ]
 then
 	mv chatgpt.sh /usr/local/bin/chatgpt
 else
-	curl -sS https://raw.githubusercontent.com/0xacx/chatgptcli/main/chatgpt.sh -o /usr/local/bin/chatgpt
+	curl -sS https://raw.githubusercontent.com/0xacx/chatGPT-shell-cli/main/chatgpt.sh -o /usr/local/bin/chatgpt
 fi
 
 chmod +x /usr/local/bin/chatgpt
