@@ -1,5 +1,5 @@
 #!/bin/bash
-echo -e "Welcome to chatgtp. You can quit with '\033[36mexit\033[0m'."
+echo -e "Welcome to chatgpt. You can quit with '\033[36mexit\033[0m'."
 running=true
 
 while $running; do
