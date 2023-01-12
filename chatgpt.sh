@@ -4,13 +4,13 @@ running=true
 
 while $running; do
   echo -e "\nEnter a prompt:"
-  read command
+  read prompt
 
-  if [ "$command" == "exit" ]; then
+  if [ "$prompt" == "exit" ]; then
     running=false
   else
 	# escape quotation marks
-	escaped_command=$(echo "$command" | sed 's/"/\\"/g')
+	escaped_prompt=$(echo "$prompt" | sed 's/"/\\"/g')
 	# request to OpenAI API
 	response=$(curl https://api.openai.com/v1/completions \
 		-sS \
@@ -18,7 +18,7 @@ while $running; do
   		-H "Authorization: Bearer $OPENAI_TOKEN" \
   		-d '{
   			"model": "text-davinci-003",
-  			"prompt": "'"${escaped_command}"'",
+  			"prompt": "'"${escaped_prompt}"'",
   			"max_tokens": 1000,
   			"temperature": 0.7
 	}' | jq -r '.choices[].text' | awk '{ printf "%s", $0 }')
