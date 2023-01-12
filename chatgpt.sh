@@ -9,13 +9,16 @@ while $running; do
   if [ "$command" == "exit" ]; then
     running=false
   else
+	# escape quotation marks
+	escaped_command=$(echo "$command" | sed 's/"/\\"/g')
+	# request to OpenAI API
 	response=$(curl https://api.openai.com/v1/completions \
 		-sS \
   		-H 'Content-Type: application/json' \
   		-H "Authorization: Bearer $OPENAI_TOKEN" \
   		-d '{
   			"model": "text-davinci-003",
-  			"prompt": "'"${command}"'",
+  			"prompt": "'"${escaped_command}"'",
   			"max_tokens": 1000,
   			"temperature": 0.7
 	}' | jq -r '.choices[].text' | awk '{ printf "%s", $0 }')
