@@ -21,7 +21,7 @@ while $running; do
   			"prompt": "'"${escaped_prompt}"'",
   			"max_tokens": 1000,
   			"temperature": 0.7
-	}' | jq -r '.choices[].text' | awk '{ printf "%s", $0 }')
+	}' | jq -r '.choices[].text' | sed '1,2d')
 	
 	echo -e "\n\033[36mchatgpt \033[0m${response}"
   fi
