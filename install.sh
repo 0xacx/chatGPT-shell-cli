@@ -20,13 +20,16 @@ else
 	exit
 fi
 
-if [ -f chatgpt.sh ]
-then
-	mv chatgpt.sh /usr/local/bin/chatgpt
-else
-	curl -sS https://raw.githubusercontent.com/0xacx/chatGPT-shell-cli/main/chatgpt.sh -o /usr/local/bin/chatgpt
+# Installing imgcat if using iTerm
+if [[ "$TERM_PROGRAM" == "iTerm.app" ]]; then
+  if [[ ! $(which imgcat) ]]; then
+    curl -sS https://iterm2.com/utilities/imgcat -o /usr/local/bin/imgcat
+    chmod +x /usr/local/bin/imgcat
+  fi
 fi
 
+# Installing chatgpt script
+curl -sS https://raw.githubusercontent.com/0xacx/chatGPT-shell-cli/main/chatgpt.sh -o /usr/local/bin/chatgpt
 chmod +x /usr/local/bin/chatgpt
 
 read -p "Please enter your OpenAI API key: " token
