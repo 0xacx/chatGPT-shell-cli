@@ -2,7 +2,7 @@
 
 # chatGPT-shell-cli 
 
-A simple, lightweight shell script to use OpenAI's chatgpt and DALL-E from the terminal without installing python or node.js. 
+A simple, lightweight shell script to use OpenAI's chatGPT and DALL-E from the terminal without installing python or node.js. 
 The script uses the `completions` endpoint and the `text-davinci-003` model for chatGPT and the `images/generations` endpoint for generating images.
 
 ![Screenshot 2023-01-12 at 13 59 08](https://user-images.githubusercontent.com/99351112/212061157-bc92e221-ad29-46b7-a0a8-c2735a09449d.png)
