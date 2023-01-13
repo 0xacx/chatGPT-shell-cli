@@ -3,9 +3,13 @@
 # chatGPT-shell-cli 
 
 A simple, lightweight shell script to use OpenAI's chatgpt from the terminal without installing python or node.js. 
-The script uses the `completion` endpoint and the `text-davinci-003` model.
+The script uses the `completions` endpoint and the `text-davinci-003` model for chatGPT and the `images/generations` endpoint for generating images.
 
 ![Screenshot 2023-01-12 at 13 59 08](https://user-images.githubusercontent.com/99351112/212061157-bc92e221-ad29-46b7-a0a8-c2735a09449d.png)
+
+You can generate images by starting your prompt with `image:`. If you are using iTerm, you can view the image directly in the terminal. Otherwise the script will ask to open the image in your browser.
+
+![Screenshot 2023-01-13 at 16 39 27](https://user-images.githubusercontent.com/99351112/212346562-ea568cce-2ca2-4b03-9ebc-ece8902c923d.png)
 
 ## Getting Started
 
