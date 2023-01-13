@@ -18,7 +18,7 @@ while $running; do
     		"n": 1,
     		"size": "512x512"
 	}' | jq -r '.data[0].url')
-	echo "Your image was created. Link: ${image_url}"
+	echo -e "\nYour image was created. \n\nLink: ${image_url}\n"
 	if [[ "$TERM_PROGRAM" == "iTerm.app" ]]; then
 		curl -sS $image_url -o temp_image.png
     	imgcat temp_image.png
@@ -27,7 +27,7 @@ while $running; do
 		echo "Would you like to open it? (Yes/No)"
 		read answer
 		if [ "$answer" == "Yes" ] || [ "$answer" == "yes" ] || [ "$answer" == "y" ] || [ "$answer" == "Y" ] || [ "$answer" == "ok" ]; then
-  		open "${image_link}"
+  		open "${image_url}"
 		fi 
 	fi
   else	
