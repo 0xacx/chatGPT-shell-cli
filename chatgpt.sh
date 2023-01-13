@@ -18,7 +18,7 @@ while $running; do
     		"n": 1,
     		"size": "512x512"
 	}' | jq -r '.data[0].url')
-	echo -e "\nYour image was created. \n\nLink: ${image_url}\n"
+	echo -e "\n\033[36mchatgpt \033[0mYour image was created. \n\nLink: ${image_url}\n"
 	if [[ "$TERM_PROGRAM" == "iTerm.app" ]]; then
 		curl -sS $image_url -o temp_image.png
     	imgcat temp_image.png
