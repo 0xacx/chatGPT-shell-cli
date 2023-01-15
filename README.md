@@ -42,6 +42,7 @@ This script relies on curl for the requests to the api and jq to parse the json 
   - Download the `chatgpt.sh` file in a directory you want
   - Add the path of `chatgpt.sh` to your `$PATH`. You do that by adding this line to your shell profile: `export PATH=$PATH:/path/to/chatgpt.sh`
   - Add the OpenAI API token to your shell profile by adding this line `export OPENAI_TOKEN=your_token_here`
+  - If you are using iTerm and want to view images in terminal, install [imgcat](https://iterm2.com/utilities/imgcat)
 
 ## Usage
 
