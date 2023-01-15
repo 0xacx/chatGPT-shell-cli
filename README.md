@@ -34,9 +34,17 @@ This script relies on curl for the requests to the api and jq to parse the json 
    ```sh
    curl -sS https://raw.githubusercontent.com/0xacx/chatGPT-shell-cli/main/install.sh | sudo -E bash
    ```
-   
-<!-- USAGE EXAMPLES -->
+  
+### Manual Installation
+
+  If want to install it manually, all you have to do is:
+
+  - Download the `chatgpt.sh` file in a directory you want
+  - Add the path of `chatgpt.sh` to your $PATH. You do that by adding this to your shell profile: `export PATH=$PATH:/path/to/chatgpt.sh`
+  - Add the OpenAI API token to your shell profile by adding this line `export OPENAI_TOKEN=your_token_here`
+
 ## Usage
 
-  Run the script by using the `chatgpt` command anywhere. Start a prompt with `image:` to generate images.
+  - Run the script by using the `chatgpt` command anywhere
+  - To generate images, start a prompt with `image:`
 
