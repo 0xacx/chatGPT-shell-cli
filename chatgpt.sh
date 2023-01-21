@@ -36,7 +36,7 @@ while $running; do
 			fi
 		fi
 	elif [[ "$prompt" == "history" ]]; then
-		cat ~/.chatgpt_history
+		echo -e	"\n$(cat ~/.chatgpt_history)"
 	else
 		# escape quotation marks
 		escaped_prompt=$(echo "$prompt" | sed 's/"/\\"/g')
