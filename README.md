@@ -48,4 +48,5 @@ This script relies on curl for the requests to the api and jq to parse the json 
 
   - Run the script by using the `chatgpt` command anywhere
   - To generate images, start a prompt with `image:`
+  - To view your chat history, type `history`
 
