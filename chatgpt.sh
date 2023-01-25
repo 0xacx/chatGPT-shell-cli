@@ -41,7 +41,7 @@ while $running; do
 		# escape quotation marks
 		escaped_prompt=$(echo "$prompt" | sed 's/"/\\"/g')
 		# request to OpenAI API
-		response=$(curl https://api.openai.com/v1/completions \
+		response_curl=$(curl https://api.openai.com/v1/completions \
 			-sS \
 			-H 'Content-Type: application/json' \
 			-H "Authorization: Bearer $OPENAI_TOKEN" \
@@ -50,9 +50,17 @@ while $running; do
   			"prompt": "'"${escaped_prompt}"'",
   			"max_tokens": 1000,
   			"temperature": 0.7
-	}' | jq -r '.choices[].text' | sed '1,2d')
+			}')
 
-		echo -e "\n\033[36mchatgpt \033[0m${response}"
+		if echo "$response_curl" | jq -e '.error' >/dev/null; then
+			echo "Something went wrong"
+			echo $response_curl
+			exit 1
+		else
+			echo "Response:"
+			response=$(echo $response_curl | jq -r '.choices[].text' | sed '1,2d')
+			echo -e "\n\033[36mchatgpt \033[0m\n${response}"
+		fi
 
 		timestamp=$(date +"%d/%m/%Y %H:%M")
 		echo -e "$timestamp $prompt \n$response \n" >> ~/.chatgpt_history
