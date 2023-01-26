@@ -5,6 +5,7 @@ running=true
 # create history file
 if [ ! -f ~/.chatgpt_history ]; then
 	touch ~/.chatgpt_history
+	chmod a+rw ~/.chatgpt_history
 fi
 
 while $running; do
