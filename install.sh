@@ -32,24 +32,27 @@ fi
 curl -sS https://raw.githubusercontent.com/0xacx/chatGPT-shell-cli/main/chatgpt.sh -o /usr/local/bin/chatgpt
 chmod +x /usr/local/bin/chatgpt
 
-read -p "Please enter your OpenAI API key: " token
+read -p "Please enter your OpenAI API key: " key
 
-# Adding OpenAI token to shell profile
+# Adding OpenAI key to shell profile
 # zsh profile
 if [ -f ~/.zprofile ]; then
-  echo "export OPENAI_KEY=$token" >> ~/.zprofile
+  echo "export OPENAI_KEY=$key" >> ~/.zprofile
   echo 'export PATH=$PATH:/usr/local/bin' >> ~/.zprofile
+  echo "OpenAI key and chatgpt path added to ~/.zprofile"
 # bash profile mac
 elif [ -f ~/.bash_profile ]; then
-  echo "export OPENAI_KEY=$token" >> ~/.bash_profile
+  echo "export OPENAI_KEY=$key" >> ~/.bash_profile
   echo 'export PATH=$PATH:/usr/local/bin' >> ~/.bash_profile
-# bash profile ubuntu
+  echo "OpenAI key and chatgpt path added to ~/.bash_profile"
+# profile ubuntu
 elif [ -f ~/.profile ]; then
-  echo "export OPENAI_KEY=$token" >> ~/.profile
+  echo "export OPENAI_KEY=$key" >> ~/.profile
   echo 'export PATH=$PATH:/usr/local/bin' >> ~/.profile
+  echo "OpenAI key and chatgpt path added to ~/.profile"
 else
-  export OPENAI_KEY=$token
-  echo "You need to add this to your shell profile: export OPENAI_KEY=$token"
+  export OPENAI_KEY=$key
+  echo "You need to add this to your shell profile: export OPENAI_KEY=$key"
 fi
 echo "Installation complete."
 chatgpt
