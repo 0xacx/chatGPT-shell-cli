@@ -37,19 +37,19 @@ read -p "Please enter your OpenAI API key: " token
 # Adding OpenAI token to shell profile
 # zsh profile
 if [ -f ~/.zprofile ]; then
-  echo "export OPENAI_TOKEN=$token" >> ~/.zprofile
+  echo "export OPENAI_KEY=$token" >> ~/.zprofile
   echo 'export PATH=$PATH:/usr/local/bin' >> ~/.zprofile
 # bash profile mac
 elif [ -f ~/.bash_profile ]; then
-  echo "export OPENAI_TOKEN=$token" >> ~/.bash_profile
+  echo "export OPENAI_KEY=$token" >> ~/.bash_profile
   echo 'export PATH=$PATH:/usr/local/bin' >> ~/.bash_profile
 # bash profile ubuntu
 elif [ -f ~/.profile ]; then
-  echo "export OPENAI_TOKEN=$token" >> ~/.profile
+  echo "export OPENAI_KEY=$token" >> ~/.profile
   echo 'export PATH=$PATH:/usr/local/bin' >> ~/.profile
 else
-  export OPENAI_TOKEN=$token
-  echo "You need to add this to your shell profile: export OPENAI_TOKEN=$token"
+  export OPENAI_KEY=$token
+  echo "You need to add this to your shell profile: export OPENAI_KEY=$token"
 fi
 echo "Installation complete."
 chatgpt

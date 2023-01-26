@@ -17,7 +17,7 @@ while $running; do
 		image_url=$(curl https://api.openai.com/v1/images/generations \
 			-sS \
 			-H 'Content-Type: application/json' \
-			-H "Authorization: Bearer $OPENAI_TOKEN" \
+			-H "Authorization: Bearer $OPENAI_KEY" \
 			-d '{
     		"prompt": "'"${prompt#*image:}"'",
     		"n": 1,
@@ -44,7 +44,7 @@ while $running; do
 		response=$(curl https://api.openai.com/v1/completions \
 			-sS \
 			-H 'Content-Type: application/json' \
-			-H "Authorization: Bearer $OPENAI_TOKEN" \
+			-H "Authorization: Bearer $OPENAI_KEY" \
 			-d '{
   			"model": "text-davinci-003",
   			"prompt": "'"${escaped_prompt}"'",
