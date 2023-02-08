@@ -52,6 +52,20 @@ while $running; do
 		fi
 	elif [[ "$prompt" == "history" ]]; then
 		echo -e "\n$(cat ~/.chatgpt_history)"
+	elif [[ "$prompt" == "models" ]]; then
+		models_response=$(curl https://api.openai.com/v1/models \
+			-sS \
+			-H "Authorization: Bearer $OPENAI_KEY")
+		handleError "$models_response"
+		models_data=$(echo $models_response | jq -r '.data[] | {id, owned_by, created}')
+		echo -e "\n\033[36mchatgpt \033[0m This is a list of models currently available at OpenAI API:\n ${models_data}"
+	elif [[ "$prompt" =~ ^model: ]]; then
+		models_response=$(curl https://api.openai.com/v1/models \
+			-sS \
+			-H "Authorization: Bearer $OPENAI_KEY")
+		handleError "$models_response"
+		model_data=$(echo $models_response | jq -r '.data[] | select(.id=="'"${prompt#*model:}"'")')
+		echo -e "\n\033[36mchatgpt \033[0m Complete data for model: ${prompt#*model:}\n ${model_data}"
 	else
 		# escape quotation marks
 		escaped_prompt=$(echo "$prompt" | sed 's/"/\\"/g')
