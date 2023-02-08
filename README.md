@@ -58,8 +58,16 @@ This script relies on curl for the requests to the api and jq to parse the json 
   - To view your chat history, type `history`
   - To get a list of the models available at OpenAI API, type `models`
   - To view all the information on a specific model, use `model:` and the model `id` as it appears in the list of models. For example: `model:text-babbage:001` will get you all the fields for `text-babbage:001` model
-  
+
+### Set request parameters
+
   - To set request parameters (temperature, model, image size and max tokens) you can start the script like this: `chatgpt --temperature 0.9 --model text-babbage:001 --max-tokens 100 --size 1024x1024`
+  
     The available parameters are: 
-      - `temperature`,  `-t` or `--temperature`
+      - temperature,  `-t` or `--temperature`
+      - model, `-m` or `--model`
+      - max number of tokens, `--max-tokens`
+      - image size, `-s` or `--size` (The sizes that are accepted by the OpenAI API are 256x256, 512x512, 1024x1024)
+      
+    To learn more about these parameters you can view the [API documentation](https://platform.openai.com/docs/api-reference/completions/create)
 
