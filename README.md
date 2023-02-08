@@ -10,6 +10,7 @@ The script uses the `completions` endpoint and the `text-davinci-003` model for 
 - Chat with GPT from the terminal
 - Generate images from a text prompt
 - View your chat history
+- List all available OpenAI models 
 
 ![Screenshot 2023-01-12 at 13 59 08](https://user-images.githubusercontent.com/99351112/212061157-bc92e221-ad29-46b7-a0a8-c2735a09449d.png)
 
