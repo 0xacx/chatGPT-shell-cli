@@ -9,7 +9,7 @@ handleError() {
 		exit 1
 	fi
 }
-# Parse command line arguments
+# parse command line arguments
 while [[ "$#" -gt 0 ]]; do
 	case $1 in
 	-t | --temperature)
@@ -39,7 +39,7 @@ while [[ "$#" -gt 0 ]]; do
 	esac
 done
 
-#Set defaults
+# set defaults
 TEMPERATURE=${TEMPERATURE:-0.7}
 MAX_TOKENS=${MAX_TOKENS:-1024}
 MODEL=${MODEL:-text-davinci-003}
