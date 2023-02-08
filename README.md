@@ -52,7 +52,12 @@ This script relies on curl for the requests to the api and jq to parse the json 
 
 ## Usage
 
+### Start
+
   - Run the script by using the `chatgpt` command anywhere
+
+### Commands
+
   - To generate images, start a prompt with `image:`
     If you are using iTerm, you can view the image directly in the terminal. Otherwise the script will ask to open the image in your browser.
   - To view your chat history, type `history`
@@ -61,7 +66,7 @@ This script relies on curl for the requests to the api and jq to parse the json 
 
 ### Set request parameters
 
-  - To set request parameters (temperature, model, image size and max tokens) you can start the script like this: `chatgpt --temperature 0.9 --model text-babbage:001 --max-tokens 100 --size 1024x1024`
+  - To set request parameters you can start the script like this: `chatgpt --temperature 0.9 --model text-babbage:001 --max-tokens 100 --size 1024x1024`
   
     The available parameters are: 
       - temperature,  `-t` or `--temperature`
