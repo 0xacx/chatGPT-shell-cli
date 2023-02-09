@@ -58,7 +58,7 @@ This script relies on curl for the requests to the api and jq to parse the json 
 
 ### Commands
 
-  - `images:` To generate images, start a prompt with `image:`
+  - `image:` To generate images, start a prompt with `image:`
     If you are using iTerm, you can view the image directly in the terminal. Otherwise the script will ask to open the image in your browser.
   - `history` To view your chat history, type `history`
   - `models` To get a list of the models available at OpenAI API, type `models`
