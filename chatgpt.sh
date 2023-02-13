@@ -55,7 +55,7 @@ if [ ! -f ~/.chatgpt_history ]; then
 fi
 
 while $running; do
-	echo -e "\nEnter a prompt:"
+	echo -e "\nEnter a ${session_set:+session }prompt:"
 	read prompt
 
 	if [ "$prompt" == "exit" ]; then
@@ -105,7 +105,13 @@ while $running; do
 		# escape quotation marks
 		escaped_prompt=$(echo "$prompt" | sed 's/"/\\"/g')
 		# escape new lines
-		escaped_prompt=${escaped_prompt//$'\n'/' '}
+		escaped_prompt=${escaped_prompt//$'\n'/\\n}
+		# start or end session
+		if [[ "$prompt" =~ ^session\! ]]; then
+			session_set='' session_prompt=''; continue
+		elif [[ "$prompt" =~ ^session ]]; then
+			session_set=1; continue
+		fi
 		# request to OpenAI API
 		response=$(curl https://api.openai.com/v1/completions \
 			-sS \
@@ -113,15 +119,22 @@ while $running; do
 			-H "Authorization: Bearer $OPENAI_KEY" \
 			-d '{
   			"model": "'"$MODEL"'",
-  			"prompt": "'"${escaped_prompt}"'",
+  			"prompt": "'"${session_prompt}${session_prompt:+\n\nQ: }${escaped_prompt}"'",
   			"max_tokens": '$MAX_TOKENS',
   			"temperature": '$TEMPERATURE'
 			}')
 
 		handleError "$response"
-		response_data=$(echo $response | jq -r '.choices[].text' | sed '1,2d')
+		response_data=$(echo $response | jq -r '.choices[].text' | sed -e '1,2d' -e '1,5s/^\s*A: //')
 		echo -e "\n\033[36mchatgpt \033[0m${response_data}"
-
+		
+		if ((session_set)); then
+			session_prompt="$session_prompt${session_prompt:+\n\n}Q: $escaped_prompt\n\nA: ${response_data//$'\n'/\\n}"
+			# trim session prompt to respect max tokens
+			while (( $(echo "$session_prompt" | wc -c)/4 > MAX_TOKENS )); do
+			 	session_prompt="${session_prompt#*\\n}"
+			done
+		fi
 		timestamp=$(date +"%d/%m/%Y %H:%M")
 		echo -e "$timestamp $prompt \n$response_data \n" >>~/.chatgpt_history
 	fi
