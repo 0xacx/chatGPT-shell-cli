@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SESSION_CHAT_INIT_PROMPT="You are ChatGPT, a Large Language Model created by OpenAI. You will be answering questions from users. Your answers must be helpful, clear and consise. Before each question you will be given the chat history. You were trained on data up until 2021"
+
 # Error handling function
 # $1 should be the response body
 handleError() {
@@ -60,8 +62,7 @@ if [ ! -f ~/.chatgpt_history ]; then
 	chmod a+rw ~/.chatgpt_history
 fi
 # start new session
-echo "session-`date '+%Y/%m/%d'`-`date '+%H:%M:%S'`">>~/.chatgpt_history
-
+echo "session-$(date '+%Y/%m/%d')-$(date '+%H:%M:%S')" >>~/.chatgpt_history
 
 while $running; do
 	echo -e "\nEnter a prompt:"
@@ -117,15 +118,23 @@ while $running; do
 		escaped_prompt=${escaped_prompt//$'\n'/' '}
 
 		if [ "$CONTEXT" = true ]; then
-			init="You are a Large Language Model created by OpenAI. You are having a chat with a user and must be very helpful, clear and consise in your answers. Use no more than 6 bullet points when you have long answers to give. You were trained on data up until 2021"
+			# get last session's chat from history
 			chat_context=$(sed '/session-/h;//!H;$!d;x' ~/.chatgpt_history)
+			# escape quotation marks and new lines
 			chat_context=${chat_context//$'\n'/' '}
 			chat_context=$(echo "$chat_context" | sed 's/"/\\"/g')
 
-			escaped_prompt="$init $chat_context $escaped_prompt"
+			# check prompt length, 1 word =~ 4 tokens
+			# reserving 200 tokens for user prompt and session init prompt
+			while (( $(echo "$chat_context" | wc -c)/4 > (MAX_TOKENS-200) )); do
+				# remove first/oldest QnA from prompt
+				chat_context=$(echo "$chat_context" | sed -n '/Question:/,$p' | tail -n +2)
+			done
+
+			# build session prompt with chat context
+			escaped_prompt="$SESSION_CHAT_INIT_PROMPT $chat_context $escaped_prompt"		
 		fi
 
-		echo -e $MODEL $escaped_prompt
 		# request to OpenAI API
 		response=$(curl https://api.openai.com/v1/completions \
 			-sS \
@@ -137,12 +146,11 @@ while $running; do
   			"max_tokens": '$MAX_TOKENS',
   			"temperature": '$TEMPERATURE'
 			}')
-		echo $response
 		handleError "$response"
 		response_data=$(echo $response | jq -r '.choices[].text' | sed '1,2d')
 		echo -e "\n\033[36mchatgpt \033[0m${response_data}"
 
 		timestamp=$(date +"%d/%m/%Y %H:%M")
-		echo -e "$timestamp Q:$prompt \nA:$response_data \n" >>~/.chatgpt_history
+		echo -e "$timestamp Question:$prompt \nAnswer:$response_data \n" >>~/.chatgpt_history
 	fi
 done
