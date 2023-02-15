@@ -67,7 +67,7 @@ This script relies on curl for the requests to the api and jq to parse the json 
 
 ### Chat context
 
-  - You can enable chat context mode for the model to remember your previous chat questions and responses. This way you can ask follow-up questions. To enable this mode start the script with `-c` or `--chat-context`. i.e. `chatgpt --chat-context` 
+  - You can enable chat context mode for the model to remember your previous chat questions and answers. This way you can ask follow-up questions. To enable this mode start the script with `-c` or `--chat-context`. i.e. `chatgpt --chat-context` 
 
 ### Set request parameters
 
