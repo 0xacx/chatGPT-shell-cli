@@ -1,5 +1,7 @@
 #!/bin/bash
 
+CHAT_INIT_PROMPT="You are ChatGPT, a Large Language Model trained by OpenAI. You will be answering questions from users. You answer as concisely as possible for each response (e.g. don’t be verbose). If you are generating a list, do not have too many items. Keep the number of items short. Before each user prompt you will be given the chat history in Q&A form. Output your answer directly, with no labels in front. Do not start your answers with A or Anwser. You were trained on data up until 2021"
+
 # Error handling function
 # $1 should be the response body
 handleError() {
@@ -32,6 +34,11 @@ while [[ "$#" -gt 0 ]]; do
 		shift
 		shift
 		;;
+	-c | --chat-context)
+		CONTEXT=true
+		shift
+		shift
+		;;
 	*)
 		echo "Unknown parameter: $1"
 		exit 1
@@ -44,6 +51,7 @@ TEMPERATURE=${TEMPERATURE:-0.7}
 MAX_TOKENS=${MAX_TOKENS:-1024}
 MODEL=${MODEL:-text-davinci-003}
 SIZE=${SIZE:-512x512}
+CONTEXT=${CONTEXT:-false}
 
 echo -e "Welcome to chatgpt. You can quit with '\033[36mexit\033[0m'."
 running=true
@@ -105,7 +113,18 @@ while $running; do
 		# escape quotation marks
 		escaped_prompt=$(echo "$prompt" | sed 's/"/\\"/g')
 		# escape new lines
-		escaped_prompt=${escaped_prompt//$'\n'/' '}
+		request_prompt=${escaped_prompt//$'\n'/' '}
+
+		if [ "$CONTEXT" = true ]; then
+			# build chat context
+			if [ -z "$chat_context" ]; then
+				chat_context="$CHAT_INIT_PROMPT\nQ: $escaped_prompt"
+			else
+				chat_context="$chat_context\nQ: $escaped_prompt"	
+			fi
+			request_prompt="${chat_context//$'\n'/\\n}"	
+		fi
+
 		# request to OpenAI API
 		response=$(curl https://api.openai.com/v1/completions \
 			-sS \
@@ -113,14 +132,26 @@ while $running; do
 			-H "Authorization: Bearer $OPENAI_KEY" \
 			-d '{
   			"model": "'"$MODEL"'",
-  			"prompt": "'"${escaped_prompt}"'",
+  			"prompt": "'"${request_prompt}"'",
   			"max_tokens": '$MAX_TOKENS',
   			"temperature": '$TEMPERATURE'
 			}')
-
 		handleError "$response"
-		response_data=$(echo $response | jq -r '.choices[].text' | sed '1,2d')
+		response_data=$(echo $response | jq -r '.choices[].text' | sed '1,2d; s/^A://g')
 		echo -e "\n\033[36mchatgpt \033[0m${response_data}"
+
+		if [ "$CONTEXT" = true ]; then
+			# add response to chat context as answer
+			chat_context="$chat_context${chat_context:+\n}\nA: ${response_data//$'\n'/\\n}"
+			# check prompt length, 1 word =~ 1.3 tokens
+			# reserving 100 tokens for next user prompt
+			while (( $(echo "$chat_context" | wc -c)*1,3 > (MAX_TOKENS-100) )); do
+				# remove first/oldest QnA from prompt
+				chat_context=$(echo "$chat_context" | sed -n '/Q:/,$p' | tail -n +2)
+				# add init prompt so it is always on top
+				chat_context="$CHAT_INIT_PROMPT $chat_context"
+			done
+		fi
 
 		timestamp=$(date +"%d/%m/%Y %H:%M")
 		echo -e "$timestamp $prompt \n$response_data \n" >>~/.chatgpt_history
