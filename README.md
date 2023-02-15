@@ -10,6 +10,7 @@ The script uses the `completions` endpoint and the `text-davinci-003` model for 
 - Chat with GPT from the terminal
 - Generate images from a text prompt
 - View your chat history
+- Chat context, GPT remembers previous chat questions and answers
 - List all available OpenAI models 
 - Set OpenAI request parameters
 
@@ -63,6 +64,10 @@ This script relies on curl for the requests to the api and jq to parse the json 
   - `history` To view your chat history, type `history`
   - `models` To get a list of the models available at OpenAI API, type `models`
   - `model:` To view all the information on a specific model, start a prompt with `model:` and the model `id` as it appears in the list of models. For example: `model:text-babbage:001` will get you all the fields for `text-babbage:001` model
+
+### Chat context
+
+  - You can enable chat context mode for the model to remember your previous chat questions and responses. This way you can ask follow-up questions. To enable this mode start the script with `-c` or `--chat-context`. i.e. `chatgpt --chat-context` 
 
 ### Set request parameters
 
