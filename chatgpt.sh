@@ -1,7 +1,6 @@
 #!/bin/bash
 
-#CHAT_INIT_PROMPT="You are ChatGPT, a Large Language Model trained by OpenAI. You will be answering questions from users. You answer as concisely as possible for each response (e.g. don’t be verbose). If you are generating a list, do not have too many items. Keep the number of items short. Before each user prompt you will be given the chat history in Q&A form. Output your answer directly, with no labels in front. Do not start your answers with A or Anwser. You were trained on data up until 2021. Today's date is $(date +%d/%m/%Y)"
-CHAT_INIT_PROMPT="Du bist ChatGPT und bekommst Benutzeranfragen direkt aus eine Linux Shell heraus. Beschränke dich auf das wesentliche und gib nützliche Tipps. Setze deine vorgeschlagenen Scripte, Kommandos und Befehle nicht in Anführungszeichen. Füge Kommentaren an den entscheidenden Stellen ein. Der Anfrage wird der Chatverlauf im Q&A Format voran gestellt."
+CHAT_INIT_PROMPT="You are ChatGPT, a Large Language Model trained by OpenAI. You will be answering questions from users. You answer as concisely as possible for each response (e.g. don’t be verbose). If you are generating a list, do not have too many items. Keep the number of items short. Before each user prompt you will be given the chat history in Q&A form. Output your answer directly, with no labels in front. Do not start your answers with A or Anwser. You were trained on data up until 2021. Today's date is $(date +%d/%m/%Y)"
 CHATGPT_PROMPT="\n\033[36mchatgpt \033[0m"
 
 # Error handling function
@@ -125,43 +124,6 @@ while [[ "$#" -gt 0 ]]; do
 		CONTEXT=true
 		shift
 		;;
-	--test)
-		test=true
-		shift
-		;;
-	-h|--help)
-	echo 'chatgpt [parameter]
-
-CLI is running if prompt not insert from file, string or stdin.
-
-Usage Parameter:
- -c, --chat-context	i.e. chatgpt --chat-context and start to chat normally. 
- -i, --init-prompt-from-file
- --init-prompt		Overwrite Initial prompt
- -p, --prompt-from-file
- --prompt
- --test		Only prompt parameters
- 
-Request Parameters:
- -t, --temperature
- -m, --model
- --max-tokens
- -s, --size		256x256, 512x512, 1024x1024
-
-CLI Commands:
-
-image: To generate images, start a prompt with image: If you are using iTerm, you can view the image directly in the terminal. Otherwise the script will ask to open the image in your browser.
- 
-history To view your chat history, type history
- 
-models To get a list of the models available at OpenAI API, type models
- 
-model: To view all the information on a specific model, start a prompt with model: and the model id as it appears in the list of models. For example: model:text-babbage:001 will get you all the fields for text-babbage:001 model
- 
-exit
-'
-		exit 0
-		;;
 	*)
 		echo "Unknown parameter: $1"
 		exit 1
@@ -170,12 +132,10 @@ exit
 done
 
 
-# Prüfen, ob die Eingabe über eine Pipe oder eine Datei empfangen wird
+# Check if the input comes from stdin
 if [ -p /dev/stdin ]; then
- # Eingabe über eine Pipe empfangen
  prompt+=$(cat -)
 fi
-
 
 # set defaults
 TEMPERATURE=${TEMPERATURE:-0.7}
@@ -203,21 +163,11 @@ while $running; do
 			read prompt
 		fi	
 	else
+		CHATGPT_PROMPT=""
 		running=false
 	fi
 
-	if [ $test ]; then
-		echo "Parameter Test"
-		echo '	"model": "'"$MODEL"'"
-	"init_prompt": '$CHAT_INIT_PROMPT'
-	"prompt": '$prompt'
-	"max_tokens": '$MAX_TOKENS'
-	"temperature": '$TEMPERATURE'
-	"size": '$SIZE'
-	"context": '$CONTEXT'
-	'
-		running=false
-	elif [ "$prompt" == "exit" ]; then
+	if [ "$prompt" == "exit" ]; then
 		running=false
 	elif [[ "$prompt" =~ ^image: ]]; then
 		request_to_image "$prompt"
