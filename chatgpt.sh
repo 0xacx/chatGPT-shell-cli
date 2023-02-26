@@ -2,6 +2,8 @@
 
 CHAT_INIT_PROMPT="You are ChatGPT, a Large Language Model trained by OpenAI. You will be answering questions from users. You answer as concisely as possible for each response (e.g. don’t be verbose). If you are generating a list, do not have too many items. Keep the number of items short. Before each user prompt you will be given the chat history in Q&A form. Output your answer directly, with no labels in front. Do not start your answers with A or Anwser. You were trained on data up until 2021. Today's date is $(date +%d/%m/%Y)"
 
+CHATGPT_CYAN_LABEL="\n\033[36mchatgpt \033[0m"
+
 # Error handling function
 # $1 should be the response body
 handle_error() {
@@ -76,9 +78,32 @@ maintain_chat_context() {
 		chat_context="$CHAT_INIT_PROMPT $chat_context"
 	done
 }
+
 # parse command line arguments
 while [[ "$#" -gt 0 ]]; do
 	case $1 in
+	-i | --init-prompt)
+		CHAT_INIT_PROMPT="$2"
+		CONTEXT=true
+		shift
+		shift
+		;;
+	--init-prompt-from-file)
+		CHAT_INIT_PROMPT=$(cat "$2")
+		CONTEXT=true
+		shift
+		shift
+		;;
+	-p | --prompt)
+		prompt="$2"
+		shift
+		shift
+		;;
+	--prompt-from-file)
+		prompt=$(cat "$2")
+		shift
+		shift
+		;;
 	-t | --temperature)
 		TEMPERATURE="$2"
 		shift
@@ -118,18 +143,36 @@ MODEL=${MODEL:-text-davinci-003}
 SIZE=${SIZE:-512x512}
 CONTEXT=${CONTEXT:-false}
 
-echo -e "Welcome to chatgpt. You can quit with '\033[36mexit\033[0m'."
-running=true
-
 # create history file
 if [ ! -f ~/.chatgpt_history ]; then
 	touch ~/.chatgpt_history
 	chmod a+rw ~/.chatgpt_history
 fi
 
+running=true
+# check input source
+# if prompt already entered, run on pipe mode (run once, no chat)
+# prompt from pipe
+if [ -p /dev/stdin ]; then
+	pipe_mode_prompt+=$(cat -)
+# prompt from argument
+elif [ -n "$prompt" ]; then
+	pipe_mode_prompt=${prompt}
+else
+	echo -e "Welcome to chatgpt. You can quit with '\033[36mexit\033[0m'."
+fi
+
 while $running; do
-	echo -e "\nEnter a prompt:"
-	read prompt
+
+	if [ -z "$pipe_mode_prompt" ]; then
+		echo -e "\nEnter a prompt:"
+		read prompt
+	else
+		# set vars for pipe mode
+		prompt=${pipe_mode_prompt}
+		running=false
+		CHATGPT_CYAN_LABEL=""
+	fi
 
 	if [ "$prompt" == "exit" ]; then
 		running=false
@@ -137,7 +180,7 @@ while $running; do
 		request_to_image "$prompt"
 		handle_error "$image_response"
 		image_url=$(echo $image_response | jq -r '.data[0].url')
-		echo -e "\n\033[36mchatgpt \033[0mYour image was created. \n\nLink: ${image_url}\n"
+		echo -e "${CHATGPT_CYAN_LABEL}Your image was created. \n\nLink: ${image_url}\n"
 
 		if [[ "$TERM_PROGRAM" == "iTerm.app" ]]; then
 			curl -sS $image_url -o temp_image.png
@@ -158,14 +201,14 @@ while $running; do
 			-H "Authorization: Bearer $OPENAI_KEY")
 		handle_error "$models_response"
 		models_data=$(echo $models_response | jq -r -C '.data[] | {id, owned_by, created}')
-		echo -e "\n\033[36mchatgpt \033[0m This is a list of models currently available at OpenAI API:\n ${models_data}"
+		echo -e "${CHATGPT_CYAN_LABEL}This is a list of models currently available at OpenAI API:\n ${models_data}"
 	elif [[ "$prompt" =~ ^model: ]]; then
 		models_response=$(curl https://api.openai.com/v1/models \
 			-sS \
 			-H "Authorization: Bearer $OPENAI_KEY")
 		handle_error "$models_response"
 		model_data=$(echo $models_response | jq -r -C '.data[] | select(.id=="'"${prompt#*model:}"'")')
-		echo -e "\n\033[36mchatgpt \033[0m Complete details for model: ${prompt#*model:}\n ${model_data}"
+		echo -e "${CHATGPT_CYAN_LABEL}Complete details for model: ${prompt#*model:}\n ${model_data}"
 	else
 		# escape quotation marks
 		escaped_prompt=$(echo "$prompt" | sed 's/"/\\"/g')
@@ -179,7 +222,7 @@ while $running; do
 		request_to_completions "$request_prompt"
 		handle_error "$response"
 		response_data=$(echo $response | jq -r '.choices[].text' | sed '1,2d; s/^A://g')
-		echo -e "\n\033[36mchatgpt \033[0m${response_data}"
+		echo -e "${CHATGPT_CYAN_LABEL}${response_data}"
 
 		if [ "$CONTEXT" = true ]; then
 			maintain_chat_context "$chat_context" "$response_data"
