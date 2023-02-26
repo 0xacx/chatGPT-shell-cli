@@ -56,6 +56,8 @@ This script relies on curl for the requests to the api and jq to parse the json 
 ### Start
 
   - Run the script by using the `chatgpt` command anywhere
+  - You can also use it in pipe mode `echo "what is the command to get all pdf files created yesterday" | chatgpt`
+  - You can also pass the prompt as an argument `chatgpt -p "Write a tweet about Musk"`
 
 ### Commands
 
@@ -84,6 +86,8 @@ This script relies on curl for the requests to the api and jq to parse the json 
       - model, `-m` or `--model`
       - max number of tokens, `--max-tokens`
       - image size, `-s` or `--size` (The sizes that are accepted by the OpenAI API are 256x256, 512x512, 1024x1024)
+      - prompt, `p` or `--prompt` 
+      - prompt from a file, `--prompt-from-file`
       
     To learn more about these parameters you can view the [API documentation](https://platform.openai.com/docs/api-reference/completions/create)
     
