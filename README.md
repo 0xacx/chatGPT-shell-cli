@@ -67,7 +67,13 @@ This script relies on curl for the requests to the api and jq to parse the json 
 
 ### Chat context
 
-  - You can enable chat context mode for the model to remember your previous chat questions and answers. This way you can ask follow-up questions. To enable this mode start the script with `-c` or `--chat-context`. i.e. `chatgpt --chat-context` and start to chat normally. 
+  - You can enable chat context mode for the model to remember your previous chat questions and answers. This way you can ask follow-up questions. To enable this mode start the script with `-c` or `--chat-context`. i.e. `chatgpt --chat-context` and start to chat. 
+
+#### Set chat initial prompt
+  - You can set your own initial chat prompt and use it in chat context mode. The initial will be sent on every request along with your prompt so that the OpenAI model will "stay in character". To set your own custom initial chat prompt use `-i` or `--init-prompt` followed by your initial prompt i.e. `chatgpt -i "You are Rick from Rick and Morty, reply with references to episodes."` 
+  - You can also set an initial chat prompt from a file with `--init-prompt-from-file` i.e. `chatgpt --init-prompt-from-file myprompt.txt`
+  
+  *When you set an init prompt you don't need to enable the chat context. 
 
 ### Set request parameters
 
@@ -80,4 +86,10 @@ This script relies on curl for the requests to the api and jq to parse the json 
       - image size, `-s` or `--size` (The sizes that are accepted by the OpenAI API are 256x256, 512x512, 1024x1024)
       
     To learn more about these parameters you can view the [API documentation](https://platform.openai.com/docs/api-reference/completions/create)
+    
+    
+#### Contributors
+Thanks to all the people who used, tested, submitted issues, PRs and proposed changes:
+
+[pfr-dev](https://www.github.com/pfr-dev), [jordantrizz](https://www.github.com/jordantrizz), [se7en-x230](https://www.github.com/se7en-x230), [@mountaineerbr](https://www.github.com/mountaineerbr), [@oligeo](https://www.github.com/oligeo)
 
