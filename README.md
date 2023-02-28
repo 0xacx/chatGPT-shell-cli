@@ -11,12 +11,33 @@ The script uses the `completions` endpoint and the `text-davinci-003` model for 
 - Generate images from a text prompt
 - View your chat history
 - Chat context, GPT remembers previous chat questions and answers
+- Pass the input prompt with pipe, as a script parameter or normal chat mode
 - List all available OpenAI models 
 - Set OpenAI request parameters
 
 ![Screenshot 2023-01-12 at 13 59 08](https://user-images.githubusercontent.com/99351112/212061157-bc92e221-ad29-46b7-a0a8-c2735a09449d.png)
 
 ![Screenshot 2023-01-13 at 16 39 27](https://user-images.githubusercontent.com/99351112/212346562-ea568cce-2ca2-4b03-9ebc-ece8902c923d.png)
+
+Chat mode:
+```shell
+$ chatgpt
+Welcome to chatgpt. You can quit with 'exit'.
+
+Enter a prompt:
+
+```
+
+Using pipe:
+```shell
+echo "How to view running processes on Ubuntu?" | chatgpt
+```
+Using script arguments
+```shell
+chatgpt -p "What is the regex to match an email address?"
+```
+
+
 
 ## Getting Started
 
@@ -87,7 +108,7 @@ This script relies on curl for the requests to the api and jq to parse the json 
       - max number of tokens, `--max-tokens`
       - image size, `-s` or `--size` (The sizes that are accepted by the OpenAI API are 256x256, 512x512, 1024x1024)
       - prompt, `p` or `--prompt` 
-      - prompt from a file, `--prompt-from-file`
+      - prompt from a file in your file system, `--prompt-from-file`
       
     To learn more about these parameters you can view the [API documentation](https://platform.openai.com/docs/api-reference/completions/create)
     
