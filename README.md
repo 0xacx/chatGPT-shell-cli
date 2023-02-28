@@ -32,7 +32,7 @@ Using pipe:
 ```shell
 echo "How to view running processes on Ubuntu?" | chatgpt
 ```
-Using script arguments
+Using script parameters:
 ```shell
 chatgpt -p "What is the regex to match an email address?"
 ```
