@@ -56,8 +56,8 @@ This script relies on curl for the requests to the api and jq to parse the json 
 ### Start
 
   - Run the script by using the `chatgpt` command anywhere
-  - You can also use it in pipe mode `echo "what is the command to get all pdf files created yesterday" | chatgpt`
-  - You can also pass the prompt as an argument `chatgpt -p "Write a tweet about Musk"`
+  - You can also use it in pipe mode `echo "What is the command to get all pdf files created yesterday?" | chatgpt`
+  - You can also pass the prompt as an argument `chatgpt -p "What is the regex to match an email address?"`
 
 ### Commands
 
@@ -72,10 +72,10 @@ This script relies on curl for the requests to the api and jq to parse the json 
   - You can enable chat context mode for the model to remember your previous chat questions and answers. This way you can ask follow-up questions. To enable this mode start the script with `-c` or `--chat-context`. i.e. `chatgpt --chat-context` and start to chat. 
 
 #### Set chat initial prompt
-  - You can set your own initial chat prompt and use it in chat context mode. The initial will be sent on every request along with your prompt so that the OpenAI model will "stay in character". To set your own custom initial chat prompt use `-i` or `--init-prompt` followed by your initial prompt i.e. `chatgpt -i "You are Rick from Rick and Morty, reply with references to episodes."` 
+  - You can set your own initial chat prompt to use in chat context mode. The initial prompt will be sent on every request along with your regular prompt so that the OpenAI model will "stay in character". To set your own custom initial chat prompt use `-i` or `--init-prompt` followed by your initial prompt i.e. `chatgpt -i "You are Rick from Rick and Morty, reply with references to episodes."` 
   - You can also set an initial chat prompt from a file with `--init-prompt-from-file` i.e. `chatgpt --init-prompt-from-file myprompt.txt`
   
-  *When you set an init prompt you don't need to enable the chat context. 
+  *When you set an initial prompt you don't need to enable the chat context. 
 
 ### Set request parameters
 
