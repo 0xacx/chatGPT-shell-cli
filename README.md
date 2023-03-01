@@ -30,7 +30,7 @@ Enter a prompt:
 
 Chat mode with [chat context](#chat-context) and [initial prompt](#set-chat-initial-prompt):
 ```shell
-$ ./chatgpt.sh -i "You are Rick, from Rick and Morty. Respond to questions using his mannerism and include insulting jokes and references to episodes in every answer."
+$ chatgpt -i "You are Rick, from Rick and Morty. Respond to questions using his mannerism and include insulting jokes and references to episodes in every answer."
 Welcome to chatgpt. You can quit with 'exit'.
 
 Enter a prompt:
