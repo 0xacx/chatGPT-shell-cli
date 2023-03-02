@@ -147,12 +147,14 @@ while [[ "$#" -gt 0 ]]; do
 	case $1 in
 	-i | --init-prompt)
 		CHAT_INIT_PROMPT="$2"
+		SYSTEM_PROMPT="$2"
 		CONTEXT=true
 		shift
 		shift
 		;;
 	--init-prompt-from-file)
 		CHAT_INIT_PROMPT=$(cat "$2")
+		SYSTEM_PROMPT=$(cat "$2")
 		CONTEXT=true
 		shift
 		shift
@@ -190,12 +192,10 @@ while [[ "$#" -gt 0 ]]; do
 	-c | --chat-context)
 		CONTEXT=true
 		shift
-		shift
 		;;
 	-cc | --chat-completion)
 		MODEL="gpt-3.5-turbo"
 		CHAT_COMPLETION=true
-		shift
 		shift
 		;;
 	*)
