@@ -2,9 +2,11 @@
 
 CHAT_INIT_PROMPT="You are ChatGPT, a Large Language Model trained by OpenAI. You will be answering questions from users. You answer as concisely as possible for each response (e.g. don’t be verbose). If you are generating a list, do not have too many items. Keep the number of items short. Before each user prompt you will be given the chat history in Q&A form. Output your answer directly, with no labels in front. Do not start your answers with A or Anwser. You were trained on data up until 2021. Today's date is $(date +%d/%m/%Y)"
 
+SYSTEM_PROMPT="You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible. Current date: $(date +%d/%m/%Y). Knowledge cutoff: 9/1/2021."
+
 CHATGPT_CYAN_LABEL="\n\033[36mchatgpt \033[0m"
 
-# Error handling function
+# error handling function
 # $1 should be the response body
 handle_error() {
 	if echo "$1" | jq -e '.error' >/dev/null; then
@@ -14,7 +16,7 @@ handle_error() {
 	fi
 }
 
-# request to OpenAI API completetions endpoint function
+# request to OpenAI API completions endpoint function
 # $1 should be the request prompt
 request_to_completions() {
 	request_prompt=$1
@@ -46,7 +48,27 @@ request_to_image() {
 			}')
 }
 
-# build chat context before each request
+# request to OpenAPI API chat completion endpoint function
+# $1 should be the message(s) formatted with role and content
+request_to_chat() {
+	message=$1
+	response=$(curl https://api.openai.com/v1/chat/completions \
+		-sS \
+		-H 'Content-Type: application/json' \
+		-H "Authorization: Bearer $OPENAI_KEY" \
+		-d '{
+            "model": "'"$MODEL"'",
+            "messages": [
+                {"role": "system", "content": "'"$SYSTEM_PROMPT"'"},
+                '"$message"'
+                ],
+            "max_tokens": '$MAX_TOKENS',
+            "temperature": '$TEMPERATURE'
+            }')
+}
+
+# build chat context before each request for /completions (all models except
+# gpt turbo)
 # $1 should be the chat context
 # $2 should be the escaped prompt
 build_chat_context() {
@@ -60,7 +82,8 @@ build_chat_context() {
 	request_prompt="${chat_context//$'\n'/\\n}"
 }
 
-# maintain chat context function, builds cc from response,
+# maintain chat context function for /completions (all models except gpt turbo)
+# builds chat context from response,
 # keeps chat context length under max token limit
 # $1 should be the chat context
 # $2 should be the response data (only the text)
@@ -76,6 +99,46 @@ maintain_chat_context() {
 		chat_context=$(echo "$chat_context" | sed -n '/Q:/,$p' | tail -n +2)
 		# add init prompt so it is always on top
 		chat_context="$CHAT_INIT_PROMPT $chat_context"
+	done
+}
+
+# build user chat message function for /chat/completions (gpt turbo model)
+# builds chat message before request,
+# $1 should be the chat message
+# $2 should be the escaped prompt
+build_user_chat_message() {
+	chat_message=$1
+	escaped_prompt=$2
+	if [ -z "$chat_message" ]; then
+		chat_message="{\"role\": \"user\", \"content\": \"$escaped_prompt\"}"
+	else
+		chat_message="$chat_message, {\"role\": \"user\", \"content\": \"$escaped_prompt\"}"
+	fi
+
+	request_prompt=$chat_message
+}
+
+# adds the assistant response to the message in (chatml) format
+# for /chat/completions (gpt turbo model)
+# keeps messages length under max token limit
+# $1 should be the chat message
+# $2 should be the response data (only the text)
+add_assistant_response_to_chat_message() {
+	chat_message=$1
+	response_data=$2
+
+	# replace new line characters from response with space
+	response_data=$(echo "$response_data" | tr '\n' ' ')
+	# add response to chat context as answer
+	chat_message="$chat_message, {\"role\": \"assistant\", \"content\": \"$response_data\"}"
+
+	# transform to json array to parse with jq
+	chat_message_json="[ $chat_message ]"
+	# check prompt length, 1 word =~ 1.3 tokens
+	# reserving 100 tokens for next user prompt
+	while (($(echo "$chat_message" | wc -c) * 1, 3 > (MAX_TOKENS - 100))); do
+		# remove first/oldest QnA from prompt
+		chat_message=$(echo "$chat_message_json" | jq -c '.[2:] | .[] | {role, content}')
 	done
 }
 
@@ -129,6 +192,12 @@ while [[ "$#" -gt 0 ]]; do
 		shift
 		shift
 		;;
+	-cc | --chat-completion)
+		MODEL="gpt-3.5-turbo"
+		CHAT_COMPLETION=true
+		shift
+		shift
+		;;
 	*)
 		echo "Unknown parameter: $1"
 		exit 1
@@ -142,6 +211,7 @@ MAX_TOKENS=${MAX_TOKENS:-1024}
 MODEL=${MODEL:-text-davinci-003}
 SIZE=${SIZE:-512x512}
 CONTEXT=${CONTEXT:-false}
+CHAT_COMPLETION=${CHAT_COMPLETION:-false}
 
 # create history file
 if [ ! -f ~/.chatgpt_history ]; then
@@ -209,6 +279,24 @@ while $running; do
 		handle_error "$models_response"
 		model_data=$(echo $models_response | jq -r -C '.data[] | select(.id=="'"${prompt#*model:}"'")')
 		echo -e "${CHATGPT_CYAN_LABEL}Complete details for model: ${prompt#*model:}\n ${model_data}"
+	elif [[ "$CHAT_COMPLETION" = true ]]; then
+		# escape quotation marks
+		escaped_prompt=$(echo "$prompt" | sed 's/"/\\"/g')
+		# escape new lines
+		request_prompt=${escaped_prompt//$'\n'/' '}
+
+		build_user_chat_message "$chat_message" "$request_prompt"
+		request_to_chat "$request_prompt"
+		handle_error "$response"
+		response_data=$(echo $response | jq -r '.choices[].message.content')
+		echo -e "${CHATGPT_CYAN_LABEL}${response_data}"
+
+		response_data=$(echo "$response_data" | sed 's/"/\\"/g')
+
+		add_assistant_response_to_chat_message "$chat_message" "$response_data"
+
+		timestamp=$(date +"%d/%m/%Y %H:%M")
+		echo -e "$timestamp $prompt \n$response_data \n" >>~/.chatgpt_history
 	else
 		# escape quotation marks
 		escaped_prompt=$(echo "$prompt" | sed 's/"/\\"/g')
@@ -225,10 +313,11 @@ while $running; do
 		echo -e "${CHATGPT_CYAN_LABEL}${response_data}"
 
 		if [ "$CONTEXT" = true ]; then
-			maintain_chat_context "$chat_context" "$response_data"
+			escaped_response_data=$(echo "$response_data" | sed 's/"/\\"/g')
+			maintain_chat_context "$chat_context" "$escaped_response_data"
 		fi
 
 		timestamp=$(date +"%d/%m/%Y %H:%M")
-		echo -e "$timestamp $prompt \n$response_data \n" >>~/.chatgpt_history
+		echo -e "$timestamp $prompt \n$escaped_response_data \n" >>~/.chatgpt_history
 	fi
 done
