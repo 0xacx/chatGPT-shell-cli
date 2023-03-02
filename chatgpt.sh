@@ -46,6 +46,20 @@ request_to_image() {
 			}')
 }
 
+# request to OpenAPI API chat completion endpoint function
+# $1 should be the message
+request_to_chat() {
+    message=$1
+    response=$(curl https://api.openai.com/v1/chat/completions \
+        -sS \
+        -H 'Content-Type: application/json' \
+        -H "Authorization: Bearer $OPENAI_KEY" \
+        -d '{
+            "model": "'"$MODEL"'",
+            "messages": [{"role": "user", "content": "'"$message"'"}]
+            }')
+}
+
 # build chat context before each request
 # $1 should be the chat context
 # $2 should be the escaped prompt
@@ -129,6 +143,12 @@ while [[ "$#" -gt 0 ]]; do
 		shift
 		shift
 		;;
+    -cc | --chat-completion)
+        MODEL="gpt-3.5-turbo"
+        CHAT_COMPLETION=true
+        shift
+        shift
+        ;;
 	*)
 		echo "Unknown parameter: $1"
 		exit 1
@@ -142,6 +162,7 @@ MAX_TOKENS=${MAX_TOKENS:-1024}
 MODEL=${MODEL:-text-davinci-003}
 SIZE=${SIZE:-512x512}
 CONTEXT=${CONTEXT:-false}
+CHAT_COMPLETION=${CHAT_COMPLETION:-false}
 
 # create history file
 if [ ! -f ~/.chatgpt_history ]; then
@@ -209,6 +230,16 @@ while $running; do
 		handle_error "$models_response"
 		model_data=$(echo $models_response | jq -r -C '.data[] | select(.id=="'"${prompt#*model:}"'")')
 		echo -e "${CHATGPT_CYAN_LABEL}Complete details for model: ${prompt#*model:}\n ${model_data}"
+    elif [[ "$CHAT_COMPLETION" = true ]]; then
+		# escape quotation marks
+		escaped_prompt=$(echo "$prompt" | sed 's/"/\\"/g')
+		# escape new lines
+		request_prompt=${escaped_prompt//$'\n'/' '}
+
+		request_to_chat "$request_prompt"
+		handle_error "$response"
+		response_data=$(echo $response | jq -r '.choices[].message.content')
+		echo -e "${CHATGPT_CYAN_LABEL}${response_data}"
 	else
 		# escape quotation marks
 		escaped_prompt=$(echo "$prompt" | sed 's/"/\\"/g')
