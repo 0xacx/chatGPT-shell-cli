@@ -2,12 +2,12 @@
 
 # chatGPT-shell-cli 
 
-A simple, lightweight shell script to use OpenAI's chatGPT and DALL-E from the terminal without installing python or node.js. 
-The script uses the `completions` endpoint and the `text-davinci-003` model for chatGPT and the `images/generations` endpoint for generating images.
+A simple, lightweight shell script to use OpenAI's chatGPT and DALL-E from the terminal without installing python or node.js. The script uses the official ChatGPT model `gpt-3.5-turbo` with the OpenAI API endpoint `/chat/completions`.  
+The script allows the use of all other OpenAI models with the `completions` endpoint and the `images/generations` endpoint for generating images.
 
 ## Features
 
-- [Chat](#chat-mode) with GPT from the terminal
+- [Chat](#use-the-official-chatgpt-model) with the just released ✨ [official ChatGPT API](https://openai.com/blog/introducing-chatgpt-and-whisper-apis) ✨ from the terminal
 - [Generate images](#commands) from a text prompt
 - View your [chat history](#commands)
 - [Chat context](#chat-context), GPT remembers previous chat questions and answers
@@ -115,6 +115,10 @@ This script relies on curl for the requests to the api and jq to parse the json 
   
   *When you set an initial prompt you don't need to enable the chat context. 
 
+### Use the official ChatGPT model
+
+  - You can use the `gpt-3.5-turbo` model by starting the script with `--chat-completion` or `-cc` i.e. `chatgpt -cc`
+
 ### Set request parameters
 
   - To set request parameters you can start the script like this: `chatgpt --temperature 0.9 --model text-babbage:001 --max-tokens 100 --size 1024x1024`
@@ -125,7 +129,7 @@ This script relies on curl for the requests to the api and jq to parse the json 
       - max number of tokens, `--max-tokens`
       - image size, `-s` or `--size` (The sizes that are accepted by the OpenAI API are 256x256, 512x512, 1024x1024)
       - prompt, `-p` or `--prompt` 
-      - prompt from a file in your file system, `--prompt-from-file`
+      - prompt from a file in your file system, `--prompt-from-file`  
       
     To learn more about these parameters you can view the [API documentation](https://platform.openai.com/docs/api-reference/completions/create)
     
