@@ -260,7 +260,12 @@ while $running; do
 			echo "Would you like to open it? (Yes/No)"
 			read answer
 			if [ "$answer" == "Yes" ] || [ "$answer" == "yes" ] || [ "$answer" == "y" ] || [ "$answer" == "Y" ] || [ "$answer" == "ok" ]; then
-				open "${image_url}"
+				if [ "$OSTYPE" == "linux-gnu" ] || [ "$OSTYPE" == "freebsd" ]; then
+					xdg-open "${image_url}"
+				elif [ "$OSTYPE" == "darwin" ]; then
+					open "${image_url}"
+				else
+					echo "Your system is not currently supported by this script."
 			fi
 		fi
 	elif [[ "$prompt" == "history" ]]; then
