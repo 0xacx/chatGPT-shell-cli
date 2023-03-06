@@ -236,7 +236,7 @@ while $running; do
 
 	if [ -z "$pipe_mode_prompt" ]; then
 		echo -e "\nEnter a prompt:"
-		read prompt
+		read -e prompt
 	else
 		# set vars for pipe mode
 		prompt=${pipe_mode_prompt}
@@ -258,7 +258,7 @@ while $running; do
 			rm temp_image.png
 		else
 			echo "Would you like to open it? (Yes/No)"
-			read answer
+			read -e answer
 			if [ "$answer" == "Yes" ] || [ "$answer" == "yes" ] || [ "$answer" == "y" ] || [ "$answer" == "Y" ] || [ "$answer" == "ok" ]; then
 				open "${image_url}"
 			fi
