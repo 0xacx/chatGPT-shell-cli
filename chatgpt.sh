@@ -236,7 +236,7 @@ while $running; do
 
 	if [ -z "$pipe_mode_prompt" ]; then
 		echo -e "\nEnter a prompt:"
-		read prompt
+		read -e prompt
 	else
 		# set vars for pipe mode
 		prompt=${pipe_mode_prompt}
