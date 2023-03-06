@@ -258,7 +258,7 @@ while $running; do
 			rm temp_image.png
 		else
 			echo "Would you like to open it? (Yes/No)"
-			read answer
+			read -e answer
 			if [ "$answer" == "Yes" ] || [ "$answer" == "yes" ] || [ "$answer" == "y" ] || [ "$answer" == "Y" ] || [ "$answer" == "ok" ]; then
 				open "${image_url}"
 			fi
