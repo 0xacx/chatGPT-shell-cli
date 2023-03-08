@@ -115,9 +115,9 @@ This script relies on curl for the requests to the api and jq to parse the json 
   
   *When you set an initial prompt you don't need to enable the chat context. 
 
-### ✨ Use the official ChatGPT model
+### Use the official ChatGPT model
 
-  - You can use the `gpt-3.5-turbo` model by starting the script with `--chat-completion` or `-cc` i.e. `chatgpt -cc`
+  - ✨ You can use the `gpt-3.5-turbo` model by starting the script with `--chat-completion` or `-cc` i.e. `chatgpt -cc`
 
 ### Set request parameters
 
