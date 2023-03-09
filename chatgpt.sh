@@ -212,6 +212,7 @@ MODEL=${MODEL:-text-davinci-003}
 SIZE=${SIZE:-512x512}
 CONTEXT=${CONTEXT:-false}
 CHAT_COMPLETION=${CHAT_COMPLETION:-false}
+HISTORY=${HISTORY:-$TMPDIR/.history_file.log}
 
 # create history file
 if [ ! -f ~/.chatgpt_history ]; then
@@ -236,7 +237,8 @@ while $running; do
 
 	if [ -z "$pipe_mode_prompt" ]; then
 		echo -e "\nEnter a prompt:"
-		read -e prompt
+		# super interactive prompt
+                prompt=$(rlwrap -H $HISTORY bash -c 'read; echo "$REPLY"')
 	else
 		# set vars for pipe mode
 		prompt=${pipe_mode_prompt}
