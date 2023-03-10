@@ -1,4 +1,5 @@
 #!/bin/bash
+GLOBIGNORE="*"
 
 CHAT_INIT_PROMPT="You are ChatGPT, a Large Language Model trained by OpenAI. You will be answering questions from users. You answer as concisely as possible for each response (e.g. don’t be verbose). If you are generating a list, do not have too many items. Keep the number of items short. Before each user prompt you will be given the chat history in Q&A form. Output your answer directly, with no labels in front. Do not start your answers with A or Anwser. You were trained on data up until 2021. Today's date is $(date +%d/%m/%Y)"
 
@@ -19,7 +20,7 @@ handle_error() {
 # request to OpenAI API completions endpoint function
 # $1 should be the request prompt
 request_to_completions() {
-	request_prompt=$1
+	request_prompt="$1"
 
 	response=$(curl https://api.openai.com/v1/completions \
 		-sS \
@@ -36,7 +37,7 @@ request_to_completions() {
 # request to OpenAI API image generations endpoint function
 # $1 should be the prompt
 request_to_image() {
-	prompt=$1
+	prompt="$1"
 	image_response=$(curl https://api.openai.com/v1/images/generations \
 		-sS \
 		-H 'Content-Type: application/json' \
@@ -51,7 +52,7 @@ request_to_image() {
 # request to OpenAPI API chat completion endpoint function
 # $1 should be the message(s) formatted with role and content
 request_to_chat() {
-	message=$1
+	message="$1"
 	response=$(curl https://api.openai.com/v1/chat/completions \
 		-sS \
 		-H 'Content-Type: application/json' \
@@ -72,8 +73,8 @@ request_to_chat() {
 # $1 should be the chat context
 # $2 should be the escaped prompt
 build_chat_context() {
-	chat_context=$1
-	escaped_prompt=$2
+	chat_context="$1"
+	escaped_prompt="$2"
 	if [ -z "$chat_context" ]; then
 		chat_context="$CHAT_INIT_PROMPT\nQ: $escaped_prompt"
 	else
@@ -88,8 +89,8 @@ build_chat_context() {
 # $1 should be the chat context
 # $2 should be the response data (only the text)
 maintain_chat_context() {
-	chat_context=$1
-	response_data=$2
+	chat_context="$1"
+	response_data="$2"
 	# add response to chat context as answer
 	chat_context="$chat_context${chat_context:+\n}\nA: ${response_data//$'\n'/\\n}"
 	# check prompt length, 1 word =~ 1.3 tokens
@@ -107,8 +108,8 @@ maintain_chat_context() {
 # $1 should be the chat message
 # $2 should be the escaped prompt
 build_user_chat_message() {
-	chat_message=$1
-	escaped_prompt=$2
+	chat_message="$1"
+	escaped_prompt="$2"
 	if [ -z "$chat_message" ]; then
 		chat_message="{\"role\": \"user\", \"content\": \"$escaped_prompt\"}"
 	else
@@ -124,8 +125,8 @@ build_user_chat_message() {
 # $1 should be the chat message
 # $2 should be the response data (only the text)
 add_assistant_response_to_chat_message() {
-	chat_message=$1
-	response_data=$2
+	chat_message="$1"
+	response_data="$2"
 
 	# replace new line characters from response with space
 	response_data=$(echo "$response_data" | tr '\n' ' ')
@@ -288,11 +289,11 @@ while $running; do
 		build_user_chat_message "$chat_message" "$request_prompt"
 		request_to_chat "$request_prompt"
 		handle_error "$response"
-		response_data=$(echo $response | jq -r '.choices[].message.content')
+		response_data=$(echo "$response" | jq -r '.choices[].message.content')
+
 		echo -e "${CHATGPT_CYAN_LABEL}${response_data}"
 
 		response_data=$(echo "$response_data" | sed 's/"/\\"/g')
-
 		add_assistant_response_to_chat_message "$chat_message" "$response_data"
 
 		timestamp=$(date +"%d/%m/%Y %H:%M")
@@ -309,7 +310,7 @@ while $running; do
 
 		request_to_completions "$request_prompt"
 		handle_error "$response"
-		response_data=$(echo $response | jq -r '.choices[].text' | sed '1,2d; s/^A://g')
+		response_data=$(echo "$response" | jq -r '.choices[].text' | sed '1,2d; s/^A://g')
 		echo -e "${CHATGPT_CYAN_LABEL}${response_data}"
 
 		if [ "$CONTEXT" = true ]; then
