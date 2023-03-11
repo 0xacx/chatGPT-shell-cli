@@ -32,7 +32,7 @@ curl -sS https://raw.githubusercontent.com/0xacx/chatGPT-shell-cli/main/chatgpt.
 
 # Replace open image command with xdg-open for linux systems
 if [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "freebsd"* ]]; then
-  sed -i -h 's/open "\${image_url}"/xdg-open "\${image_url}"/g' '/usr/local/bin/chatgpt'
+  sed -i 's/open "\${image_url}"/xdg-open "\${image_url}"/g' '/usr/local/bin/chatgpt'
 fi
 chmod +x /usr/local/bin/chatgpt
 echo "Installed chatgpt script to /usr/local/bin/chatgpt"
