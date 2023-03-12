@@ -237,7 +237,10 @@ while $running; do
 
 	if [ -z "$pipe_mode_prompt" ]; then
 		echo -e "\nEnter a prompt:"
-		read -e prompt
+		prompt=$(bash -c 'HISTFILE=$TMPDIR/prompt_history;
+                                  history -r; read -e;
+                                  history -s "$REPLY"; history -w;
+                                  echo "$REPLY"')
 	else
 		# set vars for pipe mode
 		prompt=${pipe_mode_prompt}
