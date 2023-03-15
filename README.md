@@ -7,7 +7,7 @@ The script allows the use of all other OpenAI models with the `completions` endp
 
 ## Features
 
-- [Chat](#use-the-official-chatgpt-model) with the just released ✨ [official ChatGPT API](https://openai.com/blog/introducing-chatgpt-and-whisper-apis) ✨ from the terminal
+- [Chat](#use-the-official-chatgpt-model) with the ✨ [official ChatGPT API](https://openai.com/blog/introducing-chatgpt-and-whisper-apis) ✨ from the terminal
 - [Generate images](#commands) from a text prompt
 - View your [chat history](#commands)
 - [Chat context](#chat-context), GPT remembers previous chat questions and answers
@@ -117,7 +117,10 @@ This script relies on curl for the requests to the api and jq to parse the json 
 
 ### Use the official ChatGPT model
 
-  - ✨ You can use the `gpt-3.5-turbo` model by starting the script with `--chat-completion` or `-cc` i.e. `chatgpt -cc`
+  - ✨ The model that ChatGPT web uses is `gpt-3.5-turbo` which is the model that is set by default when starting the script.
+  
+### Use GPT4
+  - If you have access to GPT4 model you can use it by setting the model to `gpt-4`, i.e. `chatgpt --model gpt-4`
 
 ### Set request parameters
 
