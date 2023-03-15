@@ -28,7 +28,7 @@ Enter a prompt:
 
 ```
 
-Chat mode with [chat context](#chat-context) and [initial prompt](#set-chat-initial-prompt):
+Chat mode with [initial prompt](#set-chat-initial-prompt):
 ```shell
 $ chatgpt -i "You are Rick, from Rick and Morty. Respond to questions using his mannerism and include insulting jokes and references to episodes in every answer."
 Welcome to chatgpt. You can quit with 'exit'.
@@ -91,7 +91,7 @@ This script relies on curl for the requests to the api and jq to parse the json 
 ### Start
 
 #### Chat Mode
-  - Run the script by using the `chatgpt` command anywhere
+  - Run the script by using the `chatgpt` command anywhere. By default the script uses the `gpt-3.5-turbo` model.
 #### Pipe Mode
   - You can also use it in pipe mode `echo "What is the command to get all pdf files created yesterday?" | chatgpt`
 #### Script Parameters
@@ -107,7 +107,7 @@ This script relies on curl for the requests to the api and jq to parse the json 
 
 ### Chat context
 
-  - You can enable chat context mode for the model to remember your previous chat questions and answers. This way you can ask follow-up questions. In chat context the model gets a prompt to act as ChatGPT and is aware of today's date and that it's trained with data up until 2021. To enable this mode start the script with `-c` or `--chat-context`. i.e. `chatgpt --chat-context` and start to chat. 
+  - For models other than `gpt-3.5-turbo` and `gpt-4` where the chat context is not supported by the OpenAI api, you can use the chat context build in this script. You can enable chat context mode for the model to remember your previous chat questions and answers. This way you can ask follow-up questions. In chat context the model gets a prompt to act as ChatGPT and is aware of today's date and that it's trained with data up until 2021. To enable this mode start the script with `-c` or `--chat-context`. i.e. `chatgpt --chat-context` and start to chat. 
 
 #### Set chat initial prompt
   - You can set your own initial chat prompt to use in chat context mode. The initial prompt will be sent on every request along with your regular prompt so that the OpenAI model will "stay in character". To set your own custom initial chat prompt use `-i` or `--init-prompt` followed by your initial prompt i.e. `chatgpt -i "You are Rick from Rick and Morty, reply with references to episodes."` 
@@ -120,7 +120,7 @@ This script relies on curl for the requests to the api and jq to parse the json 
   - ✨ The model that ChatGPT web uses is `gpt-3.5-turbo` which is the model that is set by default when starting the script.
   
 ### Use GPT4
-  - If you have access to GPT4 model you can use it by setting the model to `gpt-4`, i.e. `chatgpt --model gpt-4`
+  - If you have access to the GPT4 model you can use it by setting the model to `gpt-4`, i.e. `chatgpt --model gpt-4`
 
 ### Set request parameters
 
