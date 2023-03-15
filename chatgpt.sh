@@ -5,6 +5,10 @@ CHAT_INIT_PROMPT="You are ChatGPT, a Large Language Model trained by OpenAI. You
 
 SYSTEM_PROMPT="You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible. Current date: $(date +%d/%m/%Y). Knowledge cutoff: 9/1/2021."
 
+COMMAND_GENERATION_PROMPT="Return a one-line bash command with the functionality I will describe. Your output must follow this format \`command: the-actual-command\` and should be only the command, no quotes or other text. The command should do the following:"
+
+EXPLAIN_CODE_PROMPT="Explain in great detail, step by step the following code. Identify any dependencies, libraries, software packages. If you find any errors suggest a solution. Try to guess the context and application it is used on. This is the code:"
+
 CHATGPT_CYAN_LABEL="\n\033[36mchatgpt \033[0m"
 
 # error handling function
@@ -116,7 +120,7 @@ build_user_chat_message() {
 		chat_message="$chat_message, {\"role\": \"user\", \"content\": \"$escaped_prompt\"}"
 	fi
 
-	request_prompt=$chat_message
+	request_prompt="$chat_message"
 }
 
 # adds the assistant response to the message in (chatml) format
@@ -224,7 +228,7 @@ if [ -p /dev/stdin ]; then
 elif [ -n "$prompt" ]; then
 	pipe_mode_prompt=${prompt}
 else
-	echo -e "Welcome to chatgpt. You can quit with '\033[36mexit\033[0m'."
+	echo -e "Welcome to chatgpt. You can quit with '\033[36mexit\033[0m' or '\033[36mq\033[0m'."
 fi
 
 while $running; do
@@ -239,7 +243,7 @@ while $running; do
 		CHATGPT_CYAN_LABEL=""
 	fi
 
-	if [ "$prompt" == "exit" ]; then
+	if [ "$prompt" == "exit" ] || [ "$prompt" == "q" ]; then
 		running=false
 	elif [[ "$prompt" =~ ^image: ]]; then
 		request_to_image "$prompt"
@@ -274,6 +278,42 @@ while $running; do
 		handle_error "$models_response"
 		model_data=$(echo $models_response | jq -r -C '.data[] | select(.id=="'"${prompt#*model:}"'")')
 		echo -e "${CHATGPT_CYAN_LABEL}Complete details for model: ${prompt#*model:}\n ${model_data}"
+	elif [[ "$prompt" =~ ^command: ]] || [[ "$prompt" =~ ^explain: ]]; then
+		# escape quotation marks
+		escaped_prompt=$(echo "$prompt" | sed 's/"/\\"/g')
+		# escape new lines
+		if [[ "$prompt" =~ ^command: ]]; then
+			escaped_prompt=${prompt#*command:}
+			request_prompt=$COMMAND_GENERATION_PROMPT${escaped_prompt//$'\n'/' '}
+		elif [[ "$prompt" =~ ^explain: ]]; then
+			# todo fix explain request
+			escaped_prompt=${prompt#*explain:}
+			request_prompt=$EXPLAIN_CODE_PROMPT${escaped_prompt//$'\n'/' '}
+		fi
+
+		build_user_chat_message "$chat_message" "$request_prompt"
+		request_to_chat "$request_prompt"
+		handle_error "$response"
+		response_data=$(echo $response | jq -r '.choices[].message.content')
+
+		if [[ "$prompt" =~ ^command: ]]; then
+			extracted_command=${response_data#*command:}
+			echo -e "${CHATGPT_CYAN_LABEL} This is the command that you asked: ${extracted_command}\n"
+			echo "Would you like to execute it? (Yes/No)"
+			read run_answer
+			if [ "$run_answer" == "Yes" ] || [ "$run_answer" == "yes" ] || [ "$run_answer" == "y" ] || [ "$run_answer" == "Y" ] || [ "$run_answer" == "ok" ]; then
+				echo -e "\nExecuting command: $extracted_command\n"
+				eval $extracted_command
+			fi
+		elif [[ "$prompt" == ^explain: ]]; then
+			echo -e "${CHATGPT_CYAN_LABEL}${response_data}"
+		fi
+		response_data=$(echo "$response_data" | sed 's/"/\\"/g')
+		add_assistant_response_to_chat_message "$chat_message" "$response_data"
+
+		timestamp=$(date +"%d/%m/%Y %H:%M")
+		echo -e "$timestamp $prompt \n$response_data \n" >>~/.chatgpt_history
+
 	elif [[ "$MODEL" =~ ^gpt- ]]; then
 		# escape quotation marks
 		escaped_prompt=$(echo "$prompt" | sed 's/"/\\"/g')
