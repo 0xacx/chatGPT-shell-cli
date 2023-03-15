@@ -2,7 +2,7 @@
 
 # chatGPT-shell-cli 
 
-A simple, lightweight shell script to use OpenAI's chatGPT and DALL-E from the terminal without installing python or node.js. The script uses the official ChatGPT model `gpt-3.5-turbo` with the OpenAI API endpoint `/chat/completions`.  
+A simple, lightweight shell script to use OpenAI's chatGPT and DALL-E from the terminal without installing python or node.js. The script uses the official ChatGPT model `gpt-3.5-turbo` with the OpenAI API endpoint `/chat/completions`. You can also use the new `gpt-4` model, if you have access.  
 The script allows the use of all other OpenAI models with the `completions` endpoint and the `images/generations` endpoint for generating images.
 
 ## Features
