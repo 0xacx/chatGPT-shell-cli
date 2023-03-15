@@ -274,7 +274,7 @@ while $running; do
 		handle_error "$models_response"
 		model_data=$(echo $models_response | jq -r -C '.data[] | select(.id=="'"${prompt#*model:}"'")')
 		echo -e "${CHATGPT_CYAN_LABEL}Complete details for model: ${prompt#*model:}\n ${model_data}"
-	elif [[ "$MODEL" == "gpt-3.5-turbo" ]]; then
+	elif [[ "$MODEL" =~ ^gpt- ]]; then
 		# escape quotation marks
 		escaped_prompt=$(echo "$prompt" | sed 's/"/\\"/g')
 		# escape new lines
