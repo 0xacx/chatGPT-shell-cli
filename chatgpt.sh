@@ -194,11 +194,6 @@ while [[ "$#" -gt 0 ]]; do
 		CONTEXT=true
 		shift
 		;;
-	-cc | --chat-completion)
-		MODEL="gpt-3.5-turbo"
-		CHAT_COMPLETION=true
-		shift
-		;;
 	*)
 		echo "Unknown parameter: $1"
 		exit 1
@@ -209,10 +204,9 @@ done
 # set defaults
 TEMPERATURE=${TEMPERATURE:-0.7}
 MAX_TOKENS=${MAX_TOKENS:-1024}
-MODEL=${MODEL:-text-davinci-003}
+MODEL=${MODEL:-gpt-3.5-turbo}
 SIZE=${SIZE:-512x512}
 CONTEXT=${CONTEXT:-false}
-CHAT_COMPLETION=${CHAT_COMPLETION:-false}
 
 # create history file
 if [ ! -f ~/.chatgpt_history ]; then
@@ -280,7 +274,7 @@ while $running; do
 		handle_error "$models_response"
 		model_data=$(echo $models_response | jq -r -C '.data[] | select(.id=="'"${prompt#*model:}"'")')
 		echo -e "${CHATGPT_CYAN_LABEL}Complete details for model: ${prompt#*model:}\n ${model_data}"
-	elif [[ "$CHAT_COMPLETION" = true ]]; then
+	elif [[ "$MODEL" =~ ^gpt- ]]; then
 		# escape quotation marks
 		escaped_prompt=$(echo "$prompt" | sed 's/"/\\"/g')
 		# escape new lines
