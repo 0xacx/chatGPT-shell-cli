@@ -216,15 +216,16 @@ fi
 
 running=true
 # check input source
+# prompt from argument
+if [ -n "$prompt" ]; then
+	pipe_mode_prompt=${prompt}
+# if input file_descriptor is a terminal
+elif [ -t 0 ]; then
+	echo -e "Welcome to chatgpt. You can quit with '\033[36mexit\033[0m'."
 # if prompt already entered, run on pipe mode (run once, no chat)
 # prompt from pipe
-if [ -p /dev/stdin ]; then
-	pipe_mode_prompt+=$(cat -)
-# prompt from argument
-elif [ -n "$prompt" ]; then
-	pipe_mode_prompt=${prompt}
 else
-	echo -e "Welcome to chatgpt. You can quit with '\033[36mexit\033[0m'."
+	pipe_mode_prompt+=$(cat -)
 fi
 
 while $running; do
