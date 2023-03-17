@@ -211,7 +211,7 @@ CONTEXT=${CONTEXT:-false}
 # create history file
 if [ ! -f ~/.chatgpt_history ]; then
 	touch ~/.chatgpt_history
-	chmod a+rw ~/.chatgpt_history
+	chmod 600 ~/.chatgpt_history
 fi
 
 running=true
