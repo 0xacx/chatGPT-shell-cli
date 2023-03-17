@@ -14,6 +14,7 @@ The script allows the use of all other OpenAI models with the `completions` endp
 - Pass the input prompt with [pipe](#pipe-mode), as a [script parameter](#script-parameters) or normal [chat mode](#chat-mode)
 - List all available [OpenAI models](#commands) 
 - Set OpenAI [request parameters](#set-request-parameters)
+- Generate a [command](#commands) and run it in terminal
 
 ![Screenshot 2023-01-12 at 13 59 08](https://user-images.githubusercontent.com/99351112/212061157-bc92e221-ad29-46b7-a0a8-c2735a09449d.png)
 
@@ -104,6 +105,8 @@ This script relies on curl for the requests to the api and jq to parse the json 
   - `history` To view your chat history, type `history`
   - `models` To get a list of the models available at OpenAI API, type `models`
   - `model:` To view all the information on a specific model, start a prompt with `model:` and the model `id` as it appears in the list of models. For example: `model:text-babbage:001` will get you all the fields for `text-babbage:001` model
+  - `command:` To get a command with the specified functionality and run it, just type `command:` and explain what you want to achieve. The script will always ask you if you want to execute the command. i.e. `command: show me all files in this directory that have more than 150 lines of code" 
+  *If a command modifies your file system or dowloads external files the script will show a warning you before executing.*
 
 ### Chat context
 
