@@ -215,15 +215,15 @@ if [ ! -f ~/.chatgpt_history ]; then
 fi
 
 running=true
-# check input source
-# prompt from argument
+# check input source and determine run mode
+
+# prompt from argument, run on pipe mode (run once, no chat)
 if [ -n "$prompt" ]; then
 	pipe_mode_prompt=${prompt}
-# if input file_descriptor is a terminal
+# if input file_descriptor is a terminal, run on chat mode
 elif [ -t 0 ]; then
 	echo -e "Welcome to chatgpt. You can quit with '\033[36mexit\033[0m'."
-# if prompt already entered, run on pipe mode (run once, no chat)
-# prompt from pipe
+# prompt from pipe or redirected stdin, run on pipe mode
 else
 	pipe_mode_prompt+=$(cat -)
 fi
