@@ -106,7 +106,7 @@ This script relies on curl for the requests to the api and jq to parse the json 
   - `models` To get a list of the models available at OpenAI API, type `models`
   - `model:` To view all the information on a specific model, start a prompt with `model:` and the model `id` as it appears in the list of models. For example: `model:text-babbage:001` will get you all the fields for `text-babbage:001` model
   - `command:` To get a command with the specified functionality and run it, just type `command:` and explain what you want to achieve. The script will always ask you if you want to execute the command. i.e. `command: show me all files in this directory that have more than 150 lines of code` 
-  *If a command modifies your file system or dowloads external files the script will show a warning you before executing.*
+  *If a command modifies your file system or dowloads external files the script will show a warning before executing.*
 
 ### Chat context
 
