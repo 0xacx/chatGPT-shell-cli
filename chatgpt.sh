@@ -5,7 +5,7 @@ CHAT_INIT_PROMPT="You are ChatGPT, a Large Language Model trained by OpenAI. You
 
 SYSTEM_PROMPT="You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible. Current date: $(date +%d/%m/%Y). Knowledge cutoff: 9/1/2021."
 
-COMMAND_GENERATION_PROMPT="Return a one-line bash command with the functionality I will describe. Your output must follow this format \`command: the-actual-command\` and should be only the command, no quotes or other text. The command should do the following:"
+COMMAND_GENERATION_PROMPT="Return a one-line bash command with the functionality I will describe. Return ONLY the command ready to run in the terminal. The command should do the following:"
 
 EXPLAIN_CODE_PROMPT="Explain in great detail, step by step the following code. Identify any dependencies, libraries, software packages. If you find any errors suggest a solution. Try to guess the context and application it is used on. This is the code:"
 
@@ -215,20 +215,21 @@ CONTEXT=${CONTEXT:-false}
 # create history file
 if [ ! -f ~/.chatgpt_history ]; then
 	touch ~/.chatgpt_history
-	chmod a+rw ~/.chatgpt_history
+	chmod 600 ~/.chatgpt_history
 fi
 
 running=true
-# check input source
-# if prompt already entered, run on pipe mode (run once, no chat)
-# prompt from pipe
-if [ -p /dev/stdin ]; then
-	pipe_mode_prompt+=$(cat -)
-# prompt from argument
-elif [ -n "$prompt" ]; then
+# check input source and determine run mode
+
+# prompt from argument, run on pipe mode (run once, no chat)
+if [ -n "$prompt" ]; then
 	pipe_mode_prompt=${prompt}
-else
+# if input file_descriptor is a terminal, run on chat mode
+elif [ -t 0 ]; then
 	echo -e "Welcome to chatgpt. You can quit with '\033[36mexit\033[0m' or '\033[36mq\033[0m'."
+# prompt from pipe or redirected stdin, run on pipe mode
+else
+	pipe_mode_prompt+=$(cat -)
 fi
 
 while $running; do
@@ -278,35 +279,34 @@ while $running; do
 		handle_error "$models_response"
 		model_data=$(echo $models_response | jq -r -C '.data[] | select(.id=="'"${prompt#*model:}"'")')
 		echo -e "${CHATGPT_CYAN_LABEL}Complete details for model: ${prompt#*model:}\n ${model_data}"
-	elif [[ "$prompt" =~ ^command: ]] || [[ "$prompt" =~ ^explain: ]]; then
+	elif [[ "$prompt" =~ ^command: ]]; then
 		# escape quotation marks
 		escaped_prompt=$(echo "$prompt" | sed 's/"/\\"/g')
 		# escape new lines
 		if [[ "$prompt" =~ ^command: ]]; then
-			escaped_prompt=${prompt#*command:}
+			escaped_prompt=${prompt#command:}
 			request_prompt=$COMMAND_GENERATION_PROMPT${escaped_prompt//$'\n'/' '}
-		elif [[ "$prompt" =~ ^explain: ]]; then
-			# todo fix explain request
-			escaped_prompt=${prompt#*explain:}
-			request_prompt=$EXPLAIN_CODE_PROMPT${escaped_prompt//$'\n'/' '}
 		fi
-
 		build_user_chat_message "$chat_message" "$request_prompt"
 		request_to_chat "$request_prompt"
 		handle_error "$response"
 		response_data=$(echo $response | jq -r '.choices[].message.content')
 
 		if [[ "$prompt" =~ ^command: ]]; then
-			extracted_command=${response_data#*command:}
-			echo -e "${CHATGPT_CYAN_LABEL} This is the command that you asked: ${extracted_command}\n"
+			echo -e "${CHATGPT_CYAN_LABEL} ${response_data}\n"
+			dangerous_commands=("rm" ">" "mv" "mkfs" ":(){:|:&};" "dd" "chmod" "wget" "curl")
+
+			for dangerous_command in "${dangerous_commands[@]}"; do
+				if [[ "$response_data" == *"$dangerous_command"* ]]; then
+					echo "Warning! This command can change your file system or download external scripts & data. Please do not execute code that you don't understand completely."
+				fi
+			done
 			echo "Would you like to execute it? (Yes/No)"
 			read run_answer
-			if [ "$run_answer" == "Yes" ] || [ "$run_answer" == "yes" ] || [ "$run_answer" == "y" ] || [ "$run_answer" == "Y" ] || [ "$run_answer" == "ok" ]; then
-				echo -e "\nExecuting command: $extracted_command\n"
-				eval $extracted_command
+			if [ "$run_answer" == "Yes" ] || [ "$run_answer" == "yes" ] || [ "$run_answer" == "y" ] || [ "$run_answer" == "Y" ]; then
+				echo -e "\nExecuting command: $response_data\n"
+				eval $response_data
 			fi
-		elif [[ "$prompt" == ^explain: ]]; then
-			echo -e "${CHATGPT_CYAN_LABEL}${response_data}"
 		fi
 		response_data=$(echo "$response_data" | sed 's/"/\\"/g')
 		add_assistant_response_to_chat_message "$chat_message" "$response_data"
