@@ -7,8 +7,6 @@ SYSTEM_PROMPT="You are ChatGPT, a large language model trained by OpenAI. Answer
 
 COMMAND_GENERATION_PROMPT="Return a one-line bash command with the functionality I will describe. Return ONLY the command ready to run in the terminal. The command should do the following:"
 
-EXPLAIN_CODE_PROMPT="Explain in great detail, step by step the following code. Identify any dependencies, libraries, software packages. If you find any errors suggest a solution. Try to guess the context and application it is used on. This is the code:"
-
 CHATGPT_CYAN_LABEL="\n\033[36mchatgpt \033[0m"
 
 # error handling function
