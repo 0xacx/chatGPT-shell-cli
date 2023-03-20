@@ -77,7 +77,15 @@ This script relies on curl for the requests to the api and jq to parse the json 
    ```sh
    curl -sS https://raw.githubusercontent.com/0xacx/chatGPT-shell-cli/main/install.sh | sudo -E bash
    ```
+   
+#### ArchLinux
+
+  If you are using ArchLinux you can install the [AUR package](https://aur.archlinux.org/packages/chatgpt-shell-cli) with:
   
+  ```
+  paru -S chatgpt-shell-cli
+  ```
+
 ### Manual Installation
 
   If you want to install it manually, all you have to do is:
