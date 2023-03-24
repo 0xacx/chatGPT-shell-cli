@@ -71,7 +71,7 @@ request_to_chat() {
 }
 
 # build chat context before each request for /completions (all models except
-# gpt turbo)
+# gpt turbo and gpt 4)
 # $1 should be the chat context
 # $2 should be the escaped prompt
 build_chat_context() {
@@ -85,7 +85,8 @@ build_chat_context() {
 	request_prompt="${chat_context//$'\n'/\\n}"
 }
 
-# maintain chat context function for /completions (all models except gpt turbo)
+# maintain chat context function for /completions (all models except
+# gpt turbo and gpt 4)
 # builds chat context from response,
 # keeps chat context length under max token limit
 # $1 should be the chat context
@@ -349,8 +350,7 @@ while $running; do
 			escaped_response_data=$(echo "$response_data" | sed 's/"/\\"/g')
 			maintain_chat_context "$chat_context" "$escaped_response_data"
 		fi
-		echo "this"
-		echo $response_data
+
 		timestamp=$(date +"%d/%m/%Y %H:%M")
 		echo -e "$timestamp $prompt \n$response_data \n" >>~/.chatgpt_history
 	fi
