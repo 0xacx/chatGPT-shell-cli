@@ -105,7 +105,7 @@ maintain_chat_context() {
 	done
 }
 
-# build user chat message function for /chat/completions (gpt turbo model)
+# build user chat message function for /chat/completions (gpt models)
 # builds chat message before request,
 # $1 should be the chat message
 # $2 should be the escaped prompt
@@ -122,18 +122,18 @@ build_user_chat_message() {
 }
 
 # adds the assistant response to the message in (chatml) format
-# for /chat/completions (gpt turbo model)
+# for /chat/completions (gpt models)
 # keeps messages length under max token limit
 # $1 should be the chat message
 # $2 should be the response data (only the text)
 add_assistant_response_to_chat_message() {
 	chat_message="$1"
-	response_data="$2"
+	local local_response_data="$2"
 
 	# replace new line characters from response with space
-	response_data=$(echo "$response_data" | tr '\n' ' ')
+	local_response_data=$(echo "$local_response_data" | tr '\n' ' ')
 	# add response to chat context as answer
-	chat_message="$chat_message, {\"role\": \"assistant\", \"content\": \"$response_data\"}"
+	chat_message="$chat_message, {\"role\": \"assistant\", \"content\": \"$local_response_data\"}"
 
 	# transform to json array to parse with jq
 	chat_message_json="[ $chat_message ]"
@@ -306,8 +306,8 @@ while $running; do
 				eval $response_data
 			fi
 		fi
-		response_data=$(echo "$response_data" | sed 's/"/\\"/g')
-		add_assistant_response_to_chat_message "$chat_message" "$response_data"
+		escaped_response_data=$(echo "$response_data" | sed 's/"/\\"/g')
+		add_assistant_response_to_chat_message "$chat_message" "$escaped_response_data"
 
 		timestamp=$(date +"%d/%m/%Y %H:%M")
 		echo -e "$timestamp $prompt \n$response_data \n" >>~/.chatgpt_history
@@ -325,8 +325,8 @@ while $running; do
 
 		echo -e "${CHATGPT_CYAN_LABEL}${response_data}"
 
-		response_data=$(echo "$response_data" | sed 's/"/\\"/g')
-		add_assistant_response_to_chat_message "$chat_message" "$response_data"
+		escaped_response_data=$(echo "$response_data" | sed 's/"/\\"/g')
+		add_assistant_response_to_chat_message "$chat_message" "$escaped_response_data"
 
 		timestamp=$(date +"%d/%m/%Y %H:%M")
 		echo -e "$timestamp $prompt \n$response_data \n" >>~/.chatgpt_history
@@ -349,7 +349,8 @@ while $running; do
 			escaped_response_data=$(echo "$response_data" | sed 's/"/\\"/g')
 			maintain_chat_context "$chat_context" "$escaped_response_data"
 		fi
-
+		echo "this"
+		echo $response_data
 		timestamp=$(date +"%d/%m/%Y %H:%M")
 		echo -e "$timestamp $prompt \n$response_data \n" >>~/.chatgpt_history
 	fi
