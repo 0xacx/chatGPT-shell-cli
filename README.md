@@ -128,7 +128,7 @@ This script relies on curl for the requests to the api and jq to parse the json 
 
 ### Use the official ChatGPT model
 
-  - ✨ The model that ChatGPT web uses is `gpt-3.5-turbo` which is the model that is set by default when starting the script.
+  - The default model used when starting the script is `gpt-3.5-turbo`.
   
 ### Use GPT4
   - If you have access to the GPT4 model you can use it by setting the model to `gpt-4`, i.e. `chatgpt --model gpt-4`
