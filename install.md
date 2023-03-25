@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "ChatGPT Shell CLI - Install"
-permalink: /Install
+permalink: /install
 ---
 
 ## Getting Started
