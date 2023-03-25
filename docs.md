@@ -10,10 +10,13 @@ permalink: /docs
 
 #### Chat Mode
   - Run the script by using the `chatgpt` command anywhere. By default the script uses the `gpt-3.5-turbo` model.
+
 #### Pipe Mode
   - You can also use it in pipe mode `echo "What is the command to get all pdf files created yesterday?" | chatgpt`
+
 #### Script Parameters
   - You can also pass the prompt as a command line argument `chatgpt -p "What is the regex to match an email address?"`
+
 
 ### Commands
 
@@ -37,7 +40,7 @@ permalink: /docs
 
 ### Use the official ChatGPT model
 
-  - ✨ The model that ChatGPT web uses is `gpt-3.5-turbo` which is the model that is set by default when starting the script.
+  - The default model used when starting the script is `gpt-3.5-turbo`.
   
 ### Use GPT4
   - If you have access to the GPT4 model you can use it by setting the model to `gpt-4`, i.e. `chatgpt --model gpt-4`

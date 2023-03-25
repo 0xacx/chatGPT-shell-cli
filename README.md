@@ -66,7 +66,7 @@ chatgpt -p "What is the regex to match an email address?"
     
     
 ## Contributors
-:pray: Thanks to all the people who used, tested, submitted issues, PRs and proposed changes:
+Thanks to all the people who used, tested, submitted issues, PRs and proposed changes:
 
 [pfr-dev](https://www.github.com/pfr-dev), [jordantrizz](https://www.github.com/jordantrizz), [se7en-x230](https://www.github.com/se7en-x230), [mountaineerbr](https://www.github.com/mountaineerbr), [oligeo](https://www.github.com/oligeo), [biaocy](https://www.github.com/biaocy), [dmd](https://www.github.com/dmd), [goosegit11](https://www.github.com/goosegit11), [dilatedpupils](https://www.github.com/dilatedpupils), [direster](https://www.github.com/direster), [rxaviers](https://www.github.com/rxaviers), [Zeioth](https://www.github.com/Zeioth)
 
