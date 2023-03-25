@@ -1,6 +1,6 @@
 ---
 layout: page
-title: "HOME"
+title: "ChatGPT Shell CLI"
 permalink: /
 ---
 
