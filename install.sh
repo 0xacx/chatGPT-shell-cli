@@ -48,7 +48,7 @@ if [ "$answer" == "Yes" ] || [ "$answer" == "yes" ] || [ "$answer" == "y" ] || [
   # zsh profile
   if [ -f ~/.zprofile ]; then
     echo "export OPENAI_KEY=$key" >>~/.zprofile
-    if [[ ":$PATH:" == *":/usr/local/bin:"* ]]; then
+    if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
       echo 'export PATH=$PATH:/usr/local/bin' >>~/.zprofile
     fi
     echo "OpenAI key and chatgpt path added to ~/.zprofile"
@@ -56,7 +56,7 @@ if [ "$answer" == "Yes" ] || [ "$answer" == "yes" ] || [ "$answer" == "y" ] || [
   # bash profile mac
   elif [ -f ~/.bash_profile ]; then
     echo "export OPENAI_KEY=$key" >>~/.bash_profile
-    if [[ ":$PATH:" == *":/usr/local/bin:"* ]]; then
+    if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
       echo 'export PATH=$PATH:/usr/local/bin' >>~/.bash_profile
     fi
     echo "OpenAI key and chatgpt path added to ~/.bash_profile"
@@ -64,7 +64,7 @@ if [ "$answer" == "Yes" ] || [ "$answer" == "yes" ] || [ "$answer" == "y" ] || [
   # profile ubuntu
   elif [ -f ~/.profile ]; then
     echo "export OPENAI_KEY=$key" >>~/.profile
-    if [[ ":$PATH:" == *":/usr/local/bin:"* ]]; then
+    if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
       echo 'export PATH=$PATH:/usr/local/bin' >>~/.profile
     fi
     echo "OpenAI key and chatgpt path added to ~/.profile"
