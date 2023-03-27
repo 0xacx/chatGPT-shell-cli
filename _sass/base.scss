@@ -4,6 +4,17 @@
 
 @import "rouge-base16-dark";
 @import "default_colors";
+@font-face {
+  font-family: 'Hubot Sans';
+  src:
+    url('Hubot-Sans.woff2') format('woff2 supports variations'),
+    url('Hubot-Sans.woff2') format('woff2-variations');
+  font-weight: 200 900;
+  font-stretch: 75% 125%;
+}
+html {
+  font-family: 'Hubot Sans';
+}
 
 $body-background: $cod-grey !default;
 $body-foreground: $gallery !default;
@@ -18,7 +29,7 @@ body {
   color: $body-foreground;
   font-size: 16px;
   line-height: 1.5;
-  font-family: Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal, monospace;
+  font-family: "Hubot Sans", Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal, monospace;
 }
 
 /* General & 'Reset' Stuff */
@@ -70,7 +81,7 @@ header h1 {
   margin: 0;
   text-align: center;
   font-weight: bold;
-  font-family: Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal, monospace;
+  font-family: "Hubot Sans", Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal, monospace;
   color: $conifer;//$header;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1),
                0 0 5px rgba(181, 232, 83, 0.1),
