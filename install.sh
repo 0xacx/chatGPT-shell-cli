@@ -30,7 +30,7 @@ fi
 # Installing imgcat if using kitty
 if [[ "$TERM" == "xterm-kitty" ]]; then
   if [[ ! $(which magick) ]]; then
-    curl -sS https://imagemagick.org/archive/binaries/magick -o /usr/local/bin/magick
+    curl https://imagemagick.org/archive/binaries/magick -o /usr/local/bin/magick
     chmod +x /usr/local/bin/magick
     echo "Installed magick"
   fi
