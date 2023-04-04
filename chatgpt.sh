@@ -259,7 +259,11 @@ while $running; do
 			echo "Would you like to open it? (Yes/No)"
 			read -e answer
 			if [ "$answer" == "Yes" ] || [ "$answer" == "yes" ] || [ "$answer" == "y" ] || [ "$answer" == "Y" ] || [ "$answer" == "ok" ]; then
-				open "${image_url}"
+				if [[ -z "${CHATGPT_PLUMBER}" ]]; then
+					open "${image_url}"
+				else
+					$CHATGPT_PLUMBER "${image_url}"
+				fi
 			fi
 		fi
 	elif [[ "$prompt" == "history" ]]; then
