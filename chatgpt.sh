@@ -324,7 +324,7 @@ while $running; do
 		handle_error "$response"
 		response_data=$(echo "$response" | jq -r '.choices[].message.content')
 
-		echo -e "${CHATGPT_CYAN_LABEL}${response_data}"
+		echo -e "${CHATGPT_CYAN_LABEL}${response_data}" | fold -s -w $COLUMNS
 
 		escaped_response_data=$(echo "$response_data" | sed 's/"/\\"/g')
 		add_assistant_response_to_chat_message "$chat_message" "$escaped_response_data"
