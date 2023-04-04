@@ -9,6 +9,8 @@ COMMAND_GENERATION_PROMPT="Return a one-line bash command with the functionality
 
 CHATGPT_CYAN_LABEL="\e[36mchatgpt: \e[0m"
 
+REQUEST_SENT_LABEL="\e[90mprocessing...\e[0m"
+
 USER_GREEN_LABEL="\n\e[32mprompt: \e[0m"
 
 # error handling function
@@ -247,7 +249,10 @@ while $running; do
 
 	if [ "$prompt" == "exit" ] || [ "$prompt" == "q" ]; then
 		running=false
-	elif [[ "$prompt" =~ ^image: ]]; then
+	fi
+
+	echo -e "${REQUEST_SENT_LABEL}"
+	if [[ "$prompt" =~ ^image: ]]; then
 		request_to_image "$prompt"
 		handle_error "$image_response"
 		image_url=$(echo $image_response | jq -r '.data[0].url')
