@@ -7,7 +7,7 @@ SYSTEM_PROMPT="You are ChatGPT, a large language model trained by OpenAI. Answer
 
 COMMAND_GENERATION_PROMPT="Return a one-line bash command with the functionality I will describe. Return ONLY the command ready to run in the terminal. The command should do the following:"
 
-CHATGPT_CYAN_LABEL="\n\033[36mchatgpt \033[0m"
+CHATGPT_CYAN_LABEL="\e[36mchatgpt: \e[0m"
 
 # error handling function
 # $1 should be the response body
