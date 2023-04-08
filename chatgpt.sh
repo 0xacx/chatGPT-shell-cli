@@ -9,6 +9,8 @@ COMMAND_GENERATION_PROMPT="Return a one-line bash command with the functionality
 
 CHATGPT_CYAN_LABEL="\n\033[36mchatgpt \033[0m"
 
+PROCESSING_LABEL="\033[90mprocessing... \033[0m"
+
 # error handling function
 # $1 should be the response body
 handle_error() {
@@ -236,6 +238,9 @@ while $running; do
 	if [ -z "$pipe_mode_prompt" ]; then
 		echo -e "\nEnter a prompt:"
 		read -e prompt
+		if [ "$prompt" != "exit" ] && [ "$prompt" != "q" ]; then
+			echo -e $PROCESSING_LABEL
+		fi
 	else
 		# set vars for pipe mode
 		prompt=${pipe_mode_prompt}
