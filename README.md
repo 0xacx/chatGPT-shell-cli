@@ -1,5 +1,7 @@
 ![shell](https://user-images.githubusercontent.com/99351112/207697723-a3fabc0b-f067-4f83-96fd-1f7225a0bb38.svg)
 
+[Join Discord](https://discord.gg/fwfYAZWKqu)
+
 # chatGPT-shell-cli 
 
 A simple, lightweight shell script to use OpenAI's chatGPT and DALL-E from the terminal without installing python or node.js. The script uses the official ChatGPT model `gpt-3.5-turbo` with the OpenAI API endpoint `/chat/completions`. You can also use the new `gpt-4` model, if you have access.  
@@ -152,4 +154,9 @@ This script relies on curl for the requests to the api and jq to parse the json 
 :pray: Thanks to all the people who used, tested, submitted issues, PRs and proposed changes:
 
 [pfr-dev](https://www.github.com/pfr-dev), [jordantrizz](https://www.github.com/jordantrizz), [se7en-x230](https://www.github.com/se7en-x230), [mountaineerbr](https://www.github.com/mountaineerbr), [oligeo](https://www.github.com/oligeo), [biaocy](https://www.github.com/biaocy), [dmd](https://www.github.com/dmd), [goosegit11](https://www.github.com/goosegit11), [dilatedpupils](https://www.github.com/dilatedpupils), [direster](https://www.github.com/direster), [rxaviers](https://www.github.com/rxaviers), [Zeioth](https://www.github.com/Zeioth), [edshamis](https://www.github.com/edshamis)
+
+## Contributing
+Contributions are very welcome!
+If you have ideas or need help to get started join the [Discord server](https://discord.gg/fwfYAZWKqu)
+
 
