@@ -10,7 +10,7 @@ COMMAND_GENERATION_PROMPT="Return a one-line bash command with the functionality
 
 CHATGPT_CYAN_LABEL="\n\033[36mchatgpt \033[0m"
 
-PROCESSING_LABEL="\n\033[90mprocessing... \033[0m"
+PROCESSING_LABEL="\n\033[90mProcessing... \033[0m"
 
 if [[ -z "$OPENAI_KEY" ]]; then
 	echo "You need to set your OPENAI_KEY to use this script"
@@ -375,8 +375,14 @@ while $running; do
 		handle_error "$response"
 		response_data=$(echo "$response" | jq -r '.choices[].message.content')
 
-		echo -e "${CHATGPT_CYAN_LABEL}${response_data}" | fold -s -w $COLUMNS
-
+		# if glow installed, print parsed markdown
+		if command -v glow &>/dev/null; then
+			formatted_text=$(echo "${response_data}" | glow)
+			echo -e "${CHATGPT_CYAN_LABEL}"
+			echo -e "${formatted_text}" 
+		else
+			echo -e "${CHATGPT_CYAN_LABEL}${response_data}" | fold -s -w $COLUMNS
+		fi
 		escaped_response_data=$(echo "$response_data" | sed 's/"/\\"/g')
 		add_assistant_response_to_chat_message "$chat_message" "$escaped_response_data"
 
@@ -394,8 +400,18 @@ while $running; do
 
 		request_to_completions "$request_prompt"
 		handle_error "$response"
-		response_data=$(echo "$response" | jq -r '.choices[].text' | sed '1,2d; s/^A://g')
-		echo -e "${CHATGPT_CYAN_LABEL}${response_data}" | fold -s -w $COLUMNS
+		response_data=$(echo "$response" | jq -r '.choices[].text')
+
+		# if glow installed, print parsed markdown
+		if command -v glow &>/dev/null; then
+			formatted_text=$(echo "${response_data}" | glow)
+			echo -e "${CHATGPT_CYAN_LABEL}"
+			echo -e "${formatted_text}" 
+		else
+		# else remove empty lines and print
+			formatted_text=$(echo "${response_data}" | sed '1,2d; s/^A://g')
+			echo -e "${CHATGPT_CYAN_LABEL}${formatted_text}" | fold -s -w $COLUMNS
+		fi
 
 		if [ "$CONTEXT" = true ]; then
 			escaped_response_data=$(echo "$response_data" | sed 's/"/\\"/g')
