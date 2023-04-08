@@ -302,6 +302,10 @@ while $running; do
 			curl -sS $image_url -o temp_image.png
 			imgcat temp_image.png
 			rm temp_image.png
+		elif [[ "$TERM" == "xterm-kitty" ]]; then
+			curl -sS $image_url -o temp_image.png
+			kitty +kitten icat temp_image.png
+			rm temp_image.png
 		else
 			echo "Would you like to open it? (Yes/No)"
 			read -e answer
