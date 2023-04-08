@@ -7,7 +7,11 @@ SYSTEM_PROMPT="You are ChatGPT, a large language model trained by OpenAI. Answer
 
 COMMAND_GENERATION_PROMPT="Return a one-line bash command with the functionality I will describe. Return ONLY the command ready to run in the terminal. The command should do the following:"
 
-CHATGPT_CYAN_LABEL="\n\033[36mchatgpt \033[0m"
+CHATGPT_CYAN_LABEL="\e[36mchatgpt: \e[0m"
+
+REQUEST_SENT_LABEL="\e[90mprocessing...\e[0m"
+
+USER_GREEN_LABEL="\n\e[32mprompt: \e[0m"
 
 # error handling function
 # $1 should be the response body
@@ -234,7 +238,7 @@ fi
 while $running; do
 
 	if [ -z "$pipe_mode_prompt" ]; then
-		echo -e "\nEnter a prompt:"
+		echo -n -e "${USER_GREEN_LABEL}"
 		read -e prompt
 	else
 		# set vars for pipe mode
@@ -245,7 +249,10 @@ while $running; do
 
 	if [ "$prompt" == "exit" ] || [ "$prompt" == "q" ]; then
 		running=false
-	elif [[ "$prompt" =~ ^image: ]]; then
+	fi
+
+	echo -e "${REQUEST_SENT_LABEL}"
+	if [[ "$prompt" =~ ^image: ]]; then
 		request_to_image "$prompt"
 		handle_error "$image_response"
 		image_url=$(echo $image_response | jq -r '.data[0].url')
