@@ -292,7 +292,7 @@ while $running; do
 		response_data=$(echo $response | jq -r '.choices[].message.content')
 
 		if [[ "$prompt" =~ ^command: ]]; then
-			echo -e "${CHATGPT_CYAN_LABEL} ${response_data}\n"
+			echo -e "${CHATGPT_CYAN_LABEL} ${response_data}" | fold -s -w $COLUMNS
 			dangerous_commands=("rm" ">" "mv" "mkfs" ":(){:|:&};" "dd" "chmod" "wget" "curl")
 
 			for dangerous_command in "${dangerous_commands[@]}"; do
@@ -344,7 +344,7 @@ while $running; do
 		request_to_completions "$request_prompt"
 		handle_error "$response"
 		response_data=$(echo "$response" | jq -r '.choices[].text' | sed '1,2d; s/^A://g')
-		echo -e "${CHATGPT_CYAN_LABEL}${response_data}"
+		echo -e "${CHATGPT_CYAN_LABEL}${response_data}" | fold -s -w $COLUMNS
 
 		if [ "$CONTEXT" = true ]; then
 			escaped_response_data=$(echo "$response_data" | sed 's/"/\\"/g')
