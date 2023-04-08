@@ -27,6 +27,15 @@ if [[ "$TERM_PROGRAM" == "iTerm.app" ]]; then
   fi
 fi
 
+# Installing imgcat if using kitty
+if [[ "$TERM" == "xterm-kitty" ]]; then
+  if [[ ! $(which magick) ]]; then
+    curl https://imagemagick.org/archive/binaries/magick -o /usr/local/bin/magick
+    chmod +x /usr/local/bin/magick
+    echo "Installed magick"
+  fi
+fi
+
 # Installing chatgpt script
 curl -sS https://raw.githubusercontent.com/0xacx/chatGPT-shell-cli/main/chatgpt.sh -o /usr/local/bin/chatgpt
 
