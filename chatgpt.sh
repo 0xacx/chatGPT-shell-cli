@@ -1,4 +1,10 @@
 #!/bin/bash
+
+if [[ -z "$OPENAI_KEY" ]]; then
+  echo "OPENAI_KEY is not set, exiting"
+  exit 1
+fi
+
 GLOBIGNORE="*"
 
 CHAT_INIT_PROMPT="You are ChatGPT, a Large Language Model trained by OpenAI. You will be answering questions from users. You answer as concisely as possible for each response (e.g. don’t be verbose). If you are generating a list, do not have too many items. Keep the number of items short. Before each user prompt you will be given the chat history in Q&A form. Output your answer directly, with no labels in front. Do not start your answers with A or Anwser. You were trained on data up until 2021. Today's date is $(date +%d/%m/%Y)"
@@ -10,6 +16,32 @@ COMMAND_GENERATION_PROMPT="Return a one-line bash command with the functionality
 CHATGPT_CYAN_LABEL="\n\033[36mchatgpt \033[0m"
 
 PROCESSING_LABEL="\033[90mprocessing... \033[0m"
+
+usage() {
+  cat << EOF
+A simple, lightweight shell script to use OpenAI's chatGPT and DALL-E from the terminal without installing python or node.js.
+
+Commands:
+  image - To generate images, start a prompt with image: If you are using iTerm, you can view the image directly in the terminal. Otherwise the script will ask to open the image in your browser.
+  history - To view your chat history, type history
+  models - To get a list of the models available at OpenAI API, type models
+  model - To view all the information on a specific model, start a prompt with model: and the model id as it appears in the list of models. For example: model:text-babbage:001 will get you all the fields for text-babbage:001 model
+  command - To get a command with the specified functionality and run it, just type command: and explain what you want to achieve. The script will always ask you if you want to execute the command. i.e. command: show me all files in this directory that have more than 150 lines of code If a command modifies your file system or dowloads external files the script will show a warning before executing.
+
+Options:
+  -i, --init-prompt - Provide initial chat prompt to use in context
+  --init-prompt-from-file - Provide initial prompt from file
+  -p, --prompt - Provide prompt instead of starting chat
+  --prompt-from-file - Provide prompt from file
+  -t, --temperature - Temperature
+  --max-tokens - Max number of tokens
+  -m, --model - Model
+  -s, --size - Image size. (The sizes that are accepted by the OpenAI API are 256x256, 512x512, 1024x1024)
+  -c, --chat-context - Make chatgpt aware of todays date and what data it was trained on
+
+
+EOF
+}
 
 # error handling function
 # $1 should be the response body
@@ -199,6 +231,10 @@ while [[ "$#" -gt 0 ]]; do
 		CONTEXT=true
 		shift
 		;;
+        -h | --help)
+                usage
+                exit 0
+                ;;
 	*)
 		echo "Unknown parameter: $1"
 		exit 1
