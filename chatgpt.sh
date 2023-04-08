@@ -10,7 +10,7 @@ COMMAND_GENERATION_PROMPT="Return a one-line bash command with the functionality
 
 CHATGPT_CYAN_LABEL="\n\033[36mchatgpt \033[0m"
 
-PROCESSING_LABEL="\033[90mprocessing... \033[0m"
+PROCESSING_LABEL="\n\033[90mprocessing... \033[0m"
 
 if [[ -z "$OPENAI_KEY" ]]; then
 	echo "You need to set your OPENAI_KEY to use this script"
