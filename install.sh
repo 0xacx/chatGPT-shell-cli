@@ -62,6 +62,14 @@ if [ "$answer" == "Yes" ] || [ "$answer" == "yes" ] || [ "$answer" == "y" ] || [
     fi
     echo "OpenAI key and chatgpt path added to ~/.zprofile"
     source ~/.zprofile
+  # zshrc profile, used for interactive shells in linux
+  elif [ -f ~/.zshrc ]; then
+    echo "export OPENAI_KEY=$key" >>~/.zshrc
+    if [[ ":$PATH:" == *":/usr/local/bin:"* ]]; then
+      echo 'export PATH=$PATH:/usr/local/bin' >>~/.zshrc
+    fi
+    echo "OpenAI key and chatgpt path added to ~/.zshrc"
+    source ~/.zshrc
   # bash profile mac
   elif [ -f ~/.bash_profile ]; then
     echo "export OPENAI_KEY=$key" >>~/.bash_profile
