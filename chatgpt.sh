@@ -15,6 +15,8 @@ COMMAND_GENERATION_PROMPT="Return a one-line bash command with the functionality
 
 CHATGPT_CYAN_LABEL="\n\033[36mchatgpt \033[0m"
 
+PROCESSING_LABEL="\033[90mprocessing... \033[0m"
+
 usage() {
   cat << EOF
 A simple, lightweight shell script to use OpenAI's chatGPT and DALL-E from the terminal without installing python or node.js.
@@ -272,6 +274,9 @@ while $running; do
 	if [ -z "$pipe_mode_prompt" ]; then
 		echo -e "\nEnter a prompt:"
 		read -e prompt
+		if [ "$prompt" != "exit" ] && [ "$prompt" != "q" ]; then
+			echo -e $PROCESSING_LABEL
+		fi
 	else
 		# set vars for pipe mode
 		prompt=${pipe_mode_prompt}
@@ -328,7 +333,7 @@ while $running; do
 		response_data=$(echo $response | jq -r '.choices[].message.content')
 
 		if [[ "$prompt" =~ ^command: ]]; then
-			echo -e "${CHATGPT_CYAN_LABEL} ${response_data}\n"
+			echo -e "${CHATGPT_CYAN_LABEL} ${response_data}" | fold -s -w $COLUMNS
 			dangerous_commands=("rm" ">" "mv" "mkfs" ":(){:|:&};" "dd" "chmod" "wget" "curl")
 
 			for dangerous_command in "${dangerous_commands[@]}"; do
@@ -360,7 +365,7 @@ while $running; do
 		handle_error "$response"
 		response_data=$(echo "$response" | jq -r '.choices[].message.content')
 
-		echo -e "${CHATGPT_CYAN_LABEL}${response_data}"
+		echo -e "${CHATGPT_CYAN_LABEL}${response_data}" | fold -s -w $COLUMNS
 
 		escaped_response_data=$(echo "$response_data" | sed 's/"/\\"/g')
 		add_assistant_response_to_chat_message "$chat_message" "$escaped_response_data"
@@ -380,7 +385,7 @@ while $running; do
 		request_to_completions "$request_prompt"
 		handle_error "$response"
 		response_data=$(echo "$response" | jq -r '.choices[].text' | sed '1,2d; s/^A://g')
-		echo -e "${CHATGPT_CYAN_LABEL}${response_data}"
+		echo -e "${CHATGPT_CYAN_LABEL}${response_data}" | fold -s -w $COLUMNS
 
 		if [ "$CONTEXT" = true ]; then
 			escaped_response_data=$(echo "$response_data" | sed 's/"/\\"/g')
