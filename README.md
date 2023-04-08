@@ -159,6 +159,7 @@ This script relies on curl for the requests to the api and jq to parse the json 
 
 ## Contributing
 Contributions are very welcome!
+
 If you have ideas or need help to get started join the [Discord server](https://discord.gg/fwfYAZWKqu)
 
 
