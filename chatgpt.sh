@@ -1,4 +1,5 @@
 #!/bin/bash
+
 GLOBIGNORE="*"
 
 CHAT_INIT_PROMPT="You are ChatGPT, a Large Language Model trained by OpenAI. You will be answering questions from users. You answer as concisely as possible for each response (e.g. don’t be verbose). If you are generating a list, do not have too many items. Keep the number of items short. Before each user prompt you will be given the chat history in Q&A form. Output your answer directly, with no labels in front. Do not start your answers with A or Anwser. You were trained on data up until 2021. Today's date is $(date +%d/%m/%Y)"
@@ -10,6 +11,43 @@ COMMAND_GENERATION_PROMPT="Return a one-line bash command with the functionality
 CHATGPT_CYAN_LABEL="\n\033[36mchatgpt \033[0m"
 
 PROCESSING_LABEL="\033[90mprocessing... \033[0m"
+
+if [[ -z "$OPENAI_KEY" ]]; then
+	echo "You need to set your OPENAI_KEY to use this script"
+	echo "You can set it temporarily by running this on your terminal: export OPENAI_KEY=YOUR_KEY_HERE"
+	exit 1
+fi
+
+usage() {
+	cat <<EOF
+A simple, lightweight shell script to use OpenAI's Language Models and DALL-E from the terminal without installing Python or Node.js. Open Source and written in 100% Shell (Bash) 
+
+https://github.com/0xacx/chatGPT-shell-cli/
+
+By default the script uses the "gpt-3.5-turbo" model. It will upgrade to "gpt-4" when the API is accessible to anyone.
+
+Commands:
+  image: - To generate images, start a prompt with image: If you are using iTerm, you can view the image directly in the terminal. Otherwise the script will ask to open the image in your browser.
+  history - To view your chat history
+  models - To get a list of the models available at OpenAI API
+  model: - To view all the information on a specific model, start a prompt with model: and the model id as it appears in the list of models. For example: "model:text-babbage:001" will get you all the fields for text-babbage:001 model
+  command: - To get a command with the specified functionality and run it, just type "command:" and explain what you want to achieve. The script will always ask you if you want to execute the command. i.e. 
+  "command: show me all files in this directory that have more than 150 lines of code" 
+  *If a command modifies your file system or dowloads external files the script will show a warning before executing.
+
+Options:
+  -i, --init-prompt - Provide initial chat prompt to use in context
+  --init-prompt-from-file - Provide initial prompt from file
+  -p, --prompt - Provide prompt instead of starting chat
+  --prompt-from-file - Provide prompt from file
+  -t, --temperature - Temperature
+  --max-tokens - Max number of tokens
+  -m, --model - Model
+  -s, --size - Image size. (The sizes that are accepted by the OpenAI API are 256x256, 512x512, 1024x1024)
+  -c, --chat-context - For models that do not support chat context by default (all models except gpt-3.5-turbo and gpt-4), you can enable chat context, for the model to remember your previous questions and its previous answers. It also makes models aware of todays date and what data it was trained on.
+
+EOF
+}
 
 # error handling function
 # $1 should be the response body
@@ -198,6 +236,10 @@ while [[ "$#" -gt 0 ]]; do
 	-c | --chat-context)
 		CONTEXT=true
 		shift
+		;;
+	-h | --help)
+		usage
+		exit 0
 		;;
 	*)
 		echo "Unknown parameter: $1"
