@@ -1,6 +1,6 @@
 ![shell](https://user-images.githubusercontent.com/99351112/207697723-a3fabc0b-f067-4f83-96fd-1f7225a0bb38.svg) 
 
-Join the [Discord server](https://discord.gg/fwfYAZWKqu)!
+✨Join the new [Discord server](https://discord.gg/fwfYAZWKqu) and start contributing to this project!✨
 
 # chatGPT-shell-cli 
 
