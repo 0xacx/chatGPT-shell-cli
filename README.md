@@ -1,6 +1,6 @@
-![shell](https://user-images.githubusercontent.com/99351112/207697723-a3fabc0b-f067-4f83-96fd-1f7225a0bb38.svg)
+![shell](https://user-images.githubusercontent.com/99351112/207697723-a3fabc0b-f067-4f83-96fd-1f7225a0bb38.svg) 
 
-[Join Discord](https://discord.gg/fwfYAZWKqu)
+Join the [Discord server](https://discord.gg/fwfYAZWKqu)!
 
 # chatGPT-shell-cli 
 
@@ -162,4 +162,7 @@ Contributions are very welcome!
 
 If you have ideas or need help to get started join the [Discord server](https://discord.gg/fwfYAZWKqu)
 
+![Discord](https://img.shields.io/discord/1090696025162928158?label=Discord&style=for-the-badge)
 
+
+[![visitors](https://visitor-badge.glitch.me/badge?page_id=0xacx/chatGPT-shell-cli&left_color=black&right_color=red)](https://visitor-badge.glitch.me)
