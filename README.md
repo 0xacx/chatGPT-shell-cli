@@ -27,6 +27,8 @@ The script supports the use of all other OpenAI models with the `completions` en
 
 ![Screenshot 2023-01-13 at 16 39 27](https://user-images.githubusercontent.com/99351112/212346562-ea568cce-2ca2-4b03-9ebc-ece8902c923d.png)
 
+![command-new](https://user-images.githubusercontent.com/99351112/230913972-5a565a27-ddd1-4465-a0a7-9c9c8fadb4ab.gif)
+
 [Chat mode](#chat-mode):
 ```shell
 $ chatgpt
