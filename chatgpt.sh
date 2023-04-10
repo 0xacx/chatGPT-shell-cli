@@ -27,7 +27,7 @@ https://github.com/0xacx/chatGPT-shell-cli/
 By default the script uses the "gpt-3.5-turbo" model. It will upgrade to "gpt-4" when the API is accessible to anyone.
 
 Commands:
-  image: - To generate images, start a prompt with image: If you are using iTerm, you can view the image directly in the terminal. Otherwise the script will ask to open the image in your browser.
+  image: - To generate images, start a prompt with image: If you are using iTerm or kitty, you can view the image directly in the terminal. Otherwise the script will ask to open the image in your browser.
   history - To view your chat history
   models - To get a list of the models available at OpenAI API
   model: - To view all the information on a specific model, start a prompt with model: and the model id as it appears in the list of models. For example: "model:text-babbage:001" will get you all the fields for text-babbage:001 model
@@ -303,9 +303,7 @@ while $running; do
 			imgcat temp_image.png
 			rm temp_image.png
 		elif [[ "$TERM" == "xterm-kitty" ]]; then
-			curl -sS $image_url -o temp_image.png
-			kitty +kitten icat temp_image.png
-			rm temp_image.png
+			kitty +kitten icat "$image_url"
 		else
 			echo "Would you like to open it? (Yes/No)"
 			read -e answer
