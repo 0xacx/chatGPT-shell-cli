@@ -8,9 +8,10 @@ SYSTEM_PROMPT="You are ChatGPT, a large language model trained by OpenAI. Answer
 
 COMMAND_GENERATION_PROMPT="You are a Command Line Interface expert and your task is to provide functioning shell commands. Return a CLI command and nothing else - do not send it in a code block, quotes, or anything else, just the pure text CONTAINING ONLY THE COMMAND. If possible, return a one-line bash command or chain many commands together. Return ONLY the command ready to run in the terminal. The command should do the following:"
 
-CHATGPT_CYAN_LABEL="\n\033[36mchatgpt \033[0m"
+CHATGPT_CYAN_LABEL="\033[36mchatgpt \033[0m"
+PROCESSING_LABEL="\n\033[90mProcessing... \033[0m\033[0K\r"
+OVERWRITE_PROCESSING_LINE="             \033[0K\r"
 
-PROCESSING_LABEL="\n\033[90mProcessing... \033[0m"
 
 if [[ -z "$OPENAI_KEY" ]]; then
 	echo "You need to set your OPENAI_KEY to use this script"
@@ -281,7 +282,7 @@ while $running; do
 		echo -e "\nEnter a prompt:"
 		read -e prompt
 		if [ "$prompt" != "exit" ] && [ "$prompt" != "q" ]; then
-			echo -e $PROCESSING_LABEL
+			echo -ne $PROCESSING_LABEL
 		fi
 	else
 		# set vars for pipe mode
@@ -296,6 +297,7 @@ while $running; do
 		request_to_image "$prompt"
 		handle_error "$image_response"
 		image_url=$(echo $image_response | jq -r '.data[0].url')
+		echo -e "$OVERWRITE_PROCESSING_LINE"
 		echo -e "${CHATGPT_CYAN_LABEL}Your image was created. \n\nLink: ${image_url}\n"
 
 		if [[ "$TERM_PROGRAM" == "iTerm.app" ]]; then
@@ -321,6 +323,7 @@ while $running; do
 			-H "Authorization: Bearer $OPENAI_KEY")
 		handle_error "$models_response"
 		models_data=$(echo $models_response | jq -r -C '.data[] | {id, owned_by, created}')
+		echo -e "$OVERWRITE_PROCESSING_LINE"
 		echo -e "${CHATGPT_CYAN_LABEL}This is a list of models currently available at OpenAI API:\n ${models_data}"
 	elif [[ "$prompt" =~ ^model: ]]; then
 		models_response=$(curl https://api.openai.com/v1/models \
@@ -328,6 +331,7 @@ while $running; do
 			-H "Authorization: Bearer $OPENAI_KEY")
 		handle_error "$models_response"
 		model_data=$(echo $models_response | jq -r -C '.data[] | select(.id=="'"${prompt#*model:}"'")')
+		echo -e "$OVERWRITE_PROCESSING_LINE"
 		echo -e "${CHATGPT_CYAN_LABEL}Complete details for model: ${prompt#*model:}\n ${model_data}"
 	elif [[ "$prompt" =~ ^command: ]]; then
 		# escape quotation marks
@@ -343,6 +347,7 @@ while $running; do
 		response_data=$(echo $response | jq -r '.choices[].message.content')
 
 		if [[ "$prompt" =~ ^command: ]]; then
+			echo -e "$OVERWRITE_PROCESSING_LINE"
 			echo -e "${CHATGPT_CYAN_LABEL} ${response_data}" | fold -s -w $COLUMNS
 			dangerous_commands=("rm" ">" "mv" "mkfs" ":(){:|:&};" "dd" "chmod" "wget" "curl")
 
@@ -375,11 +380,12 @@ while $running; do
 		handle_error "$response"
 		response_data=$(echo "$response" | jq -r '.choices[].message.content')
 
+		echo -e "$OVERWRITE_PROCESSING_LINE"
 		# if glow installed, print parsed markdown
 		if command -v glow &>/dev/null; then
-			formatted_text=$(echo "${response_data}" | glow)
 			echo -e "${CHATGPT_CYAN_LABEL}"
-			echo -e "${formatted_text}" 
+			echo "${response_data}" | glow -
+			#echo -e "${formatted_text}" 
 		else
 			echo -e "${CHATGPT_CYAN_LABEL}${response_data}" | fold -s -w $COLUMNS
 		fi
@@ -402,11 +408,11 @@ while $running; do
 		handle_error "$response"
 		response_data=$(echo "$response" | jq -r '.choices[].text')
 
+		echo -e "$OVERWRITE_PROCESSING_LINE"
 		# if glow installed, print parsed markdown
 		if command -v glow &>/dev/null; then
-			formatted_text=$(echo "${response_data}" | glow)
 			echo -e "${CHATGPT_CYAN_LABEL}"
-			echo -e "${formatted_text}" 
+			echo "${response_data}" | glow -
 		else
 		# else remove empty lines and print
 			formatted_text=$(echo "${response_data}" | sed '1,2d; s/^A://g')
