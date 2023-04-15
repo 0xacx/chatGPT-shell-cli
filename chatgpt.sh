@@ -96,6 +96,8 @@ request_to_image() {
 # $1 should be the message(s) formatted with role and content
 request_to_chat() {
 	message="$1"
+	# escape quotation marks and newlines in the prompt
+	escaped_prompt=$(echo "$SYSTEM_PROMPT" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
 	response=$(curl https://api.openai.com/v1/chat/completions \
 		-sS \
 		-H 'Content-Type: application/json' \
@@ -103,7 +105,7 @@ request_to_chat() {
 		-d '{
             "model": "'"$MODEL"'",
             "messages": [
-                {"role": "system", "content": "'"$SYSTEM_PROMPT"'"},
+                {"role": "system", "content": "'"$escaped_prompt"'"},
                 '"$message"'
                 ],
             "max_tokens": '$MAX_TOKENS',
