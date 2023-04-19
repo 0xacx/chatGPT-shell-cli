@@ -12,6 +12,8 @@ CHATGPT_CYAN_LABEL="\033[36mchatgpt \033[0m"
 PROCESSING_LABEL="\n\033[90mProcessing... \033[0m\033[0K\r"
 OVERWRITE_PROCESSING_LINE="             \033[0K\r"
 
+OPENAI_API="api.openai.com"
+
 
 if [[ -z "$OPENAI_KEY" ]]; then
 	echo "You need to set your OPENAI_KEY to use this script"
@@ -46,6 +48,7 @@ Options:
   -m, --model - Model
   -s, --size - Image size. (The sizes that are accepted by the OpenAI API are 256x256, 512x512, 1024x1024)
   -c, --chat-context - For models that do not support chat context by default (all models except gpt-3.5-turbo and gpt-4), you can enable chat context, for the model to remember your previous questions and its previous answers. It also makes models aware of todays date and what data it was trained on.
+  -a, --api - Provide API address to replace the "api.openai.com"
 
 EOF
 }
@@ -65,7 +68,7 @@ handle_error() {
 request_to_completions() {
 	request_prompt="$1"
 
-	response=$(curl https://api.openai.com/v1/completions \
+	response=$(curl https://${OPENAI_API}/v1/completions \
 		-sS \
 		-H 'Content-Type: application/json' \
 		-H "Authorization: Bearer $OPENAI_KEY" \
@@ -81,7 +84,7 @@ request_to_completions() {
 # $1 should be the prompt
 request_to_image() {
 	prompt="$1"
-	image_response=$(curl https://api.openai.com/v1/images/generations \
+	image_response=$(curl https://${OPENAI_API}/v1/images/generations \
 		-sS \
 		-H 'Content-Type: application/json' \
 		-H "Authorization: Bearer $OPENAI_KEY" \
@@ -96,7 +99,7 @@ request_to_image() {
 # $1 should be the message(s) formatted with role and content
 request_to_chat() {
 	message="$1"
-	response=$(curl https://api.openai.com/v1/chat/completions \
+	response=$(curl https://${OPENAI_API}/v1/chat/completions \
 		-sS \
 		-H 'Content-Type: application/json' \
 		-H "Authorization: Bearer $OPENAI_KEY" \
@@ -234,6 +237,11 @@ while [[ "$#" -gt 0 ]]; do
 		shift
 		shift
 		;;
+	-a | --api)
+		OPENAI_API="$2"
+		shift
+		shift
+		;;
 	-c | --chat-context)
 		CONTEXT=true
 		shift
@@ -318,7 +326,7 @@ while $running; do
 	elif [[ "$prompt" == "history" ]]; then
 		echo -e "\n$(cat ~/.chatgpt_history)"
 	elif [[ "$prompt" == "models" ]]; then
-		models_response=$(curl https://api.openai.com/v1/models \
+		models_response=$(curl https://${OPENAI_API}/v1/models \
 			-sS \
 			-H "Authorization: Bearer $OPENAI_KEY")
 		handle_error "$models_response"
@@ -326,7 +334,7 @@ while $running; do
 		echo -e "$OVERWRITE_PROCESSING_LINE"
 		echo -e "${CHATGPT_CYAN_LABEL}This is a list of models currently available at OpenAI API:\n ${models_data}"
 	elif [[ "$prompt" =~ ^model: ]]; then
-		models_response=$(curl https://api.openai.com/v1/models \
+		models_response=$(curl https://${OPENAI_API}/v1/models \
 			-sS \
 			-H "Authorization: Bearer $OPENAI_KEY")
 		handle_error "$models_response"
