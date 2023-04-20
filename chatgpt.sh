@@ -77,6 +77,17 @@ handle_error() {
 	fi
 }
 
+# request to openAI API models endpoint. Returns a list of models
+# takes no input parameters
+list_models() {
+  models_response=$(curl https://api.openai.com/v1/models \
+    -sS \
+    -H "Authorization: Bearer $OPENAI_KEY")
+  handle_error "$models_response"
+  models_data=$(echo $models_response | jq -r -C '.data[] | {id, owned_by, created}')
+  echo -e "$OVERWRITE_PROCESSING_LINE"
+  echo -e "${CHATGPT_CYAN_LABEL}This is a list of models currently available at OpenAI API:\n ${models_data}"
+}
 # request to OpenAI API completions endpoint function
 # $1 should be the request prompt
 request_to_completions() {
@@ -241,6 +252,10 @@ while [[ "$#" -gt 0 ]]; do
 		shift
 		shift
 		;;
+	-l | --list)
+		list_models
+		exit 0
+		;;
 	-m | --model)
 		MODEL="$2"
 		shift
@@ -335,13 +350,7 @@ while $running; do
 	elif [[ "$prompt" == "history" ]]; then
 		echo -e "\n$(cat ~/.chatgpt_history)"
 	elif [[ "$prompt" == "models" ]]; then
-		models_response=$(curl https://api.openai.com/v1/models \
-			-sS \
-			-H "Authorization: Bearer $OPENAI_KEY")
-		handle_error "$models_response"
-		models_data=$(echo $models_response | jq -r -C '.data[] | {id, owned_by, created}')
-		echo -e "$OVERWRITE_PROCESSING_LINE"
-		echo -e "${CHATGPT_CYAN_LABEL}This is a list of models currently available at OpenAI API:\n ${models_data}"
+    list_models
 	elif [[ "$prompt" =~ ^model: ]]; then
 		models_response=$(curl https://api.openai.com/v1/models \
 			-sS \
