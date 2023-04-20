@@ -37,15 +37,32 @@ Commands:
   *If a command modifies your file system or dowloads external files the script will show a warning before executing.
 
 Options:
-  -i, --init-prompt - Provide initial chat prompt to use in context
-  --init-prompt-from-file - Provide initial prompt from file
-  -p, --prompt - Provide prompt instead of starting chat
-  --prompt-from-file - Provide prompt from file
-  -t, --temperature - Temperature
-  --max-tokens - Max number of tokens
-  -m, --model - Model
-  -s, --size - Image size. (The sizes that are accepted by the OpenAI API are 256x256, 512x512, 1024x1024)
-  -c, --chat-context - For models that do not support chat context by default (all models except gpt-3.5-turbo and gpt-4), you can enable chat context, for the model to remember your previous questions and its previous answers. It also makes models aware of todays date and what data it was trained on.
+  -i, --init-prompt          Provide initial chat prompt to use in context
+
+  --init-prompt-from-file    Provide initial prompt from file
+
+  -p, --prompt               Provide prompt instead of starting chat
+
+  --prompt-from-file         Provide prompt from file
+
+  -t, --temperature          Temperature
+
+  --max-tokens               Max number of tokens
+
+  -l, --list                 List available openAI models
+
+  -m, --model                Model to use
+
+  -s, --size                 Image size. (The sizes that are accepted by the
+                             OpenAI API are 256x256, 512x512, 1024x1024)
+
+  -c, --chat-context         For models that do not support chat context by
+                             default (all models except gpt-3.5-turbo and
+                             gpt-4), you can enable chat context, for the
+                             model to remember your previous questions and
+                             its previous answers. It also makes models
+                             aware of todays date and what data it was trained
+                             on.
 
 EOF
 }
