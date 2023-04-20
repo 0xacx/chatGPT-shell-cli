@@ -255,11 +255,12 @@ MAX_TOKENS=${MAX_TOKENS:-1024}
 MODEL=${MODEL:-gpt-3.5-turbo}
 SIZE=${SIZE:-512x512}
 CONTEXT=${CONTEXT:-false}
+HISTORY_FILE="$HOME/.cache/chatgpt_history"
 
 # create history file
-if [ ! -f ~/.chatgpt_history ]; then
-	touch ~/.chatgpt_history
-	chmod 600 ~/.chatgpt_history
+if [ ! -f "$HISTORY_FILE" ]; then
+	touch "$HISTORY_FILE"
+	chmod 600 "$HISTORY_FILE"
 fi
 
 running=true
@@ -316,7 +317,7 @@ while $running; do
 			fi
 		fi
 	elif [[ "$prompt" == "history" ]]; then
-		echo -e "\n$(cat ~/.chatgpt_history)"
+		echo -e "\n$(cat "$HISTORY_FILE")"
 	elif [[ "$prompt" == "models" ]]; then
 		models_response=$(curl https://api.openai.com/v1/models \
 			-sS \
@@ -367,7 +368,7 @@ while $running; do
 		add_assistant_response_to_chat_message "$chat_message" "$escaped_response_data"
 
 		timestamp=$(date +"%d/%m/%Y %H:%M")
-		echo -e "$timestamp $prompt \n$response_data \n" >>~/.chatgpt_history
+		echo -e "$timestamp $prompt \n$response_data \n" >>"$HISTORY_FILE"
 
 	elif [[ "$MODEL" =~ ^gpt- ]]; then
 		# escape quotation marks
@@ -393,7 +394,7 @@ while $running; do
 		add_assistant_response_to_chat_message "$chat_message" "$escaped_response_data"
 
 		timestamp=$(date +"%d/%m/%Y %H:%M")
-		echo -e "$timestamp $prompt \n$response_data \n" >>~/.chatgpt_history
+		echo -e "$timestamp $prompt \n$response_data \n" >>"$HISTORY_FILE"
 	else
 		# escape quotation marks
 		escaped_prompt=$(echo "$prompt" | sed 's/"/\\"/g')
@@ -425,6 +426,6 @@ while $running; do
 		fi
 
 		timestamp=$(date +"%d/%m/%Y %H:%M")
-		echo -e "$timestamp $prompt \n$response_data \n" >>~/.chatgpt_history
+		echo -e "$timestamp $prompt \n$response_data \n" >>"$HISTORY_FILE"
 	fi
 done
