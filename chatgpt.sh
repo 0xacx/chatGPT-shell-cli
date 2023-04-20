@@ -313,7 +313,7 @@ while $running; do
 	if [ -z "$pipe_mode_prompt" ]; then
 		echo -e "\nEnter a prompt:"
 		read -e prompt
-		if [ "$prompt" != "exit" ] && [ "$prompt" != "q" ]; then
+    if [[ ! $prompt =~ ^(exit|q)$ ]]; then
 			echo -ne $PROCESSING_LABEL
 		fi
 	else
@@ -323,7 +323,7 @@ while $running; do
 		CHATGPT_CYAN_LABEL=""
 	fi
 
-	if [ "$prompt" == "exit" ] || [ "$prompt" == "q" ]; then
+  if [[ $prompt =~ ^(exit|q)$ ]]; then
 		running=false
 	elif [[ "$prompt" =~ ^image: ]]; then
 		request_to_image "$prompt"
