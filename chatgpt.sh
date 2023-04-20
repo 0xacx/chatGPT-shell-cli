@@ -45,6 +45,8 @@ Options:
 
   --prompt-from-file         Provide prompt from file
 
+  -b, --big-prompt           Allow multi-line prompts during chat mode
+
   -t, --temperature          Temperature
 
   --max-tokens               Max number of tokens
@@ -266,6 +268,10 @@ while [[ "$#" -gt 0 ]]; do
 		shift
 		shift
 		;;
+	-b | --big-prompt)
+		BIG_PROMPT=true
+		shift
+		;;
 	-c | --chat-context)
 		CONTEXT=true
 		shift
@@ -287,6 +293,14 @@ MAX_TOKENS=${MAX_TOKENS:-1024}
 MODEL=${MODEL:-gpt-3.5-turbo}
 SIZE=${SIZE:-512x512}
 CONTEXT=${CONTEXT:-false}
+BIG_PROMPT=${BIG_PROMPT:-false}
+
+# create our temp file for multi-line input
+if [ $BIG_PROMPT = true ]; then
+	USER_INPUT=$(mktemp)
+	trap 'rm -f ${USER_INPUT}' EXIT
+fi
+
 
 # create history file
 if [ ! -f ~/.chatgpt_history ]; then
@@ -311,8 +325,14 @@ fi
 while $running; do
 
 	if [ -z "$pipe_mode_prompt" ]; then
-		echo -e "\nEnter a prompt:"
-		read -e prompt
+		if [ $BIG_PROMPT = true ]; then
+			echo -e "\nEnter a prompt: (Press Enter then Ctrl-D to send)"
+			cat > "${USER_INPUT}"
+			prompt=$(sed -E ':a;N;$!ba;s/\r{0,1}\n/\\n/g' "${USER_INPUT}")
+		else
+			echo -e "\nEnter a prompt:"
+			read -e prompt
+		fi
     if [[ ! $prompt =~ ^(exit|q)$ ]]; then
 			echo -ne $PROCESSING_LABEL
 		fi
