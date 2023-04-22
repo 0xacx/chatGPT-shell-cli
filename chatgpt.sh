@@ -298,16 +298,18 @@ while $running; do
 		handle_error "$image_response"
 		image_url=$(echo $image_response | jq -r '.data[0].url')
 		echo -e "$OVERWRITE_PROCESSING_LINE"
-		echo -e "${CHATGPT_CYAN_LABEL}Your image was created. \n\nLink: ${image_url}\n"
+		echo -e "${CHATGPT_CYAN_LABEL}Your image was created."
+		echo ""
+		echo ""
+		echo "Link: ${image_url}"
+		echo ""
 
 		if [[ "$TERM_PROGRAM" == "iTerm.app" ]]; then
-			curl -sS $image_url -o temp_image.png
-			imgcat temp_image.png
-			rm temp_image.png
+			curl --progress-bar "${image_url}" -o /tmp/temp_image.png
+			imgcat /tmp/temp_image.png
 		elif [[ "$TERM" == "xterm-kitty" ]]; then
-			curl -sS $image_url -o temp_image.png
-			kitty +kitten icat temp_image.png
-			rm temp_image.png
+			curl --progress-bar "${image_url}" -o /tmp/temp_image.png
+			kitty +kitten icat /tmp/temp_image.png
 		else
 			echo "Would you like to open it? (Yes/No)"
 			read -e answer
