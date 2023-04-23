@@ -54,8 +54,8 @@ EOF
 # $1 should be the response body
 handle_error() {
 	if echo "$1" | jq -e '.error' >/dev/null; then
-		echo -e "Your request to Open AI API failed: \033[0;31m$(echo $1 | jq -r '.error.type')\033[0m"
-		echo $1 | jq -r '.error.message'
+		echo -e "Your request to Open AI API failed: \033[0;31m$(echo "$1" | jq -r '.error.type')\033[0m"
+		echo "$1" | jq -r '.error.message'
 		exit 1
 	fi
 }
@@ -296,7 +296,7 @@ while $running; do
 	elif [[ "$prompt" =~ ^image: ]]; then
 		request_to_image "$prompt"
 		handle_error "$image_response"
-		image_url=$(echo $image_response | jq -r '.data[0].url')
+		image_url=$(echo "$image_response" | jq -r '.data[0].url')
 		echo -e "$OVERWRITE_PROCESSING_LINE"
 		echo -e "${CHATGPT_CYAN_LABEL}Your image was created. \n\nLink: ${image_url}\n"
 
