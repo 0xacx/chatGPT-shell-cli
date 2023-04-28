@@ -122,7 +122,10 @@ build_chat_context() {
 	else
 		chat_context="$chat_context\nQ: $escaped_request_prompt"
 	fi
-	request_prompt="${chat_context//$'\n'/\\n}"
+}
+
+escape(){
+  echo "$1" | jq -Rrs 'tojson[1:-1]'
 }
 
 # maintain chat context function for /completions (all models except
@@ -326,7 +329,7 @@ while $running; do
 		echo -e "${CHATGPT_CYAN_LABEL}Complete details for model: ${prompt#*model:}\n ${model_data}"
 	elif [[ "$prompt" =~ ^command: ]]; then
 		# escape quotation marks, new lines, backslashes...
-		escaped_prompt=$(echo "$prompt" | sed 's/"/\\"/g')
+		escaped_prompt=$(escape "$prompt")
 		escaped_prompt=${escaped_prompt#command:}
 		request_prompt=$COMMAND_GENERATION_PROMPT$escaped_prompt
 		build_user_chat_message "$request_prompt"
@@ -351,16 +354,14 @@ while $running; do
 				eval $response_data
 			fi
 		fi
-		add_assistant_response_to_chat_message "$(echo "$response_data" | tr '\n' ' ')"
+		add_assistant_response_to_chat_message "$(escape "$response_data")"
 
 		timestamp=$(date +"%d/%m/%Y %H:%M")
 		echo -e "$timestamp $prompt \n$response_data \n" >>~/.chatgpt_history
 
 	elif [[ "$MODEL" =~ ^gpt- ]]; then
-		# escape quotation marks
-		escaped_prompt=$(echo "$prompt" | sed 's/"/\\"/g')
-		# escape new lines
-		request_prompt=${escaped_prompt//$'\n'/' '}
+		# escape quotation marks, new lines, backslashes...
+		request_prompt=$(escape "$prompt")
 
 		build_user_chat_message "$request_prompt"
 		response=$(request_to_chat "$chat_message")
@@ -376,16 +377,13 @@ while $running; do
 		else
 			echo -e "${CHATGPT_CYAN_LABEL}${response_data}" | fold -s -w $COLUMNS
 		fi
-		escaped_response_data=$(echo "$response_data" | sed 's/"/\\"/g')
-		add_assistant_response_to_chat_message "$chat_message" "$escaped_response_data"
+		add_assistant_response_to_chat_message "$(escape "$response_data")"
 
 		timestamp=$(date +"%d/%m/%Y %H:%M")
 		echo -e "$timestamp $prompt \n$response_data \n" >>~/.chatgpt_history
 	else
-		# escape quotation marks
-		escaped_prompt=$(echo "$prompt" | sed 's/"/\\"/g')
-		# escape new lines
-		request_prompt=${escaped_prompt//$'\n'/' '}
+		# escape quotation marks, new lines, backslashes...
+		request_prompt=$(escape "$prompt")
 
 		if [ "$CONTEXT" = true ]; then
 			build_chat_context "$request_prompt"
@@ -407,7 +405,7 @@ while $running; do
 		fi
 
 		if [ "$CONTEXT" = true ]; then
-			maintain_chat_context "$escaped_response_data"
+			maintain_chat_context "$(escape "$response_data")"
 		fi
 
 		timestamp=$(date +"%d/%m/%Y %H:%M")
