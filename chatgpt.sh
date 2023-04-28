@@ -63,24 +63,24 @@ handle_error() {
 # request to OpenAI API completions endpoint function
 # $1 should be the request prompt
 request_to_completions() {
-	request_prompt="$1"
+	local prompt="$1"
 
-	response=$(curl https://api.openai.com/v1/completions \
+	curl https://api.openai.com/v1/completions \
 		-sS \
 		-H 'Content-Type: application/json' \
 		-H "Authorization: Bearer $OPENAI_KEY" \
 		-d '{
   			"model": "'"$MODEL"'",
-  			"prompt": "'"${request_prompt}"'",
+  			"prompt": "'"$prompt"'",
   			"max_tokens": '$MAX_TOKENS',
   			"temperature": '$TEMPERATURE'
-			}')
+			}'
 }
 
 # request to OpenAI API image generations endpoint function
 # $1 should be the prompt
 request_to_image() {
-	prompt="$1"
+	local prompt="$1"
 	image_response=$(curl https://api.openai.com/v1/images/generations \
 		-sS \
 		-H 'Content-Type: application/json' \
@@ -95,8 +95,8 @@ request_to_image() {
 # request to OpenAPI API chat completion endpoint function
 # $1 should be the message(s) formatted with role and content
 request_to_chat() {
-	message="$1"
-	response=$(curl https://api.openai.com/v1/chat/completions \
+	local message="$1"
+	curl https://api.openai.com/v1/chat/completions \
 		-sS \
 		-H 'Content-Type: application/json' \
 		-H "Authorization: Bearer $OPENAI_KEY" \
@@ -108,20 +108,19 @@ request_to_chat() {
                 ],
             "max_tokens": '$MAX_TOKENS',
             "temperature": '$TEMPERATURE'
-            }')
+            }'
 }
 
 # build chat context before each request for /completions (all models except
 # gpt turbo and gpt 4)
-# $1 should be the chat context
-# $2 should be the escaped prompt
+# $1 should be the escaped request prompt,
+# it extends $chat_context
 build_chat_context() {
-	chat_context="$1"
-	escaped_prompt="$2"
+	local escaped_request_prompt="$1"
 	if [ -z "$chat_context" ]; then
-		chat_context="$CHAT_INIT_PROMPT\nQ: $escaped_prompt"
+		chat_context="$CHAT_INIT_PROMPT\nQ: $escaped_request_prompt"
 	else
-		chat_context="$chat_context\nQ: $escaped_prompt"
+		chat_context="$chat_context\nQ: $escaped_request_prompt"
 	fi
 	request_prompt="${chat_context//$'\n'/\\n}"
 }
@@ -130,13 +129,12 @@ build_chat_context() {
 # gpt turbo and gpt 4)
 # builds chat context from response,
 # keeps chat context length under max token limit
-# $1 should be the chat context
-# $2 should be the response data (only the text)
+# * $1 should be the escaped response data
+# * it extends $chat_context
 maintain_chat_context() {
-	chat_context="$1"
-	response_data="$2"
+	local escaped_response_data="$1"
 	# add response to chat context as answer
-	chat_context="$chat_context${chat_context:+\n}\nA: ${response_data//$'\n'/\\n}"
+	chat_context="$chat_context${chat_context:+\n}\nA: $escaped_response_data"
 	# check prompt length, 1 word =~ 1.3 tokens
 	# reserving 100 tokens for next user prompt
 	while (($(echo "$chat_context" | wc -c) * 1, 3 > (MAX_TOKENS - 100))); do
@@ -149,36 +147,29 @@ maintain_chat_context() {
 
 # build user chat message function for /chat/completions (gpt models)
 # builds chat message before request,
-# $1 should be the chat message
-# $2 should be the escaped prompt
+# $1 should be the escaped request prompt,
+# it extends $chat_message
 build_user_chat_message() {
-	chat_message="$1"
-	escaped_prompt="$2"
+	local escaped_request_prompt="$1"
 	if [ -z "$chat_message" ]; then
-		chat_message="{\"role\": \"user\", \"content\": \"$escaped_prompt\"}"
+		chat_message="{\"role\": \"user\", \"content\": \"$escaped_request_prompt\"}"
 	else
-		chat_message="$chat_message, {\"role\": \"user\", \"content\": \"$escaped_prompt\"}"
+		chat_message="$chat_message, {\"role\": \"user\", \"content\": \"$escaped_request_prompt\"}"
 	fi
-
-	request_prompt="$chat_message"
 }
 
 # adds the assistant response to the message in (chatml) format
 # for /chat/completions (gpt models)
 # keeps messages length under max token limit
-# $1 should be the chat message
-# $2 should be the response data (only the text)
+# * $1 should be the escaped response data
+# * it extends and potentially shrinks $chat_message
 add_assistant_response_to_chat_message() {
-	chat_message="$1"
-	local local_response_data="$2"
-
-	# replace new line characters from response with space
-	local_response_data=$(echo "$local_response_data" | tr '\n' ' ')
+	local escaped_response_data="$1"
 	# add response to chat context as answer
-	chat_message="$chat_message, {\"role\": \"assistant\", \"content\": \"$local_response_data\"}"
+	chat_message="$chat_message, {\"role\": \"assistant\", \"content\": \"$escaped_response_data\"}"
 
 	# transform to json array to parse with jq
-	chat_message_json="[ $chat_message ]"
+	local chat_message_json="[ $chat_message ]"
 	# check prompt length, 1 word =~ 1.3 tokens
 	# reserving 100 tokens for next user prompt
 	while (($(echo "$chat_message" | wc -c) * 1, 3 > (MAX_TOKENS - 100))); do
@@ -334,15 +325,12 @@ while $running; do
 		echo -e "$OVERWRITE_PROCESSING_LINE"
 		echo -e "${CHATGPT_CYAN_LABEL}Complete details for model: ${prompt#*model:}\n ${model_data}"
 	elif [[ "$prompt" =~ ^command: ]]; then
-		# escape quotation marks
+		# escape quotation marks, new lines, backslashes...
 		escaped_prompt=$(echo "$prompt" | sed 's/"/\\"/g')
-		# escape new lines
-		if [[ "$prompt" =~ ^command: ]]; then
-			escaped_prompt=${prompt#command:}
-			request_prompt=$COMMAND_GENERATION_PROMPT${escaped_prompt//$'\n'/' '}
-		fi
-		build_user_chat_message "$chat_message" "$request_prompt"
-		request_to_chat "$request_prompt"
+		escaped_prompt=${escaped_prompt#command:}
+		request_prompt=$COMMAND_GENERATION_PROMPT$escaped_prompt
+		build_user_chat_message "$request_prompt"
+		response=$(request_to_chat "$chat_message")
 		handle_error "$response"
 		response_data=$(echo $response | jq -r '.choices[].message.content')
 
@@ -363,8 +351,7 @@ while $running; do
 				eval $response_data
 			fi
 		fi
-		escaped_response_data=$(echo "$response_data" | sed 's/"/\\"/g')
-		add_assistant_response_to_chat_message "$chat_message" "$escaped_response_data"
+		add_assistant_response_to_chat_message "$(echo "$response_data" | tr '\n' ' ')"
 
 		timestamp=$(date +"%d/%m/%Y %H:%M")
 		echo -e "$timestamp $prompt \n$response_data \n" >>~/.chatgpt_history
@@ -375,8 +362,8 @@ while $running; do
 		# escape new lines
 		request_prompt=${escaped_prompt//$'\n'/' '}
 
-		build_user_chat_message "$chat_message" "$request_prompt"
-		request_to_chat "$request_prompt"
+		build_user_chat_message "$request_prompt"
+		response=$(request_to_chat "$chat_message")
 		handle_error "$response"
 		response_data=$(echo "$response" | jq -r '.choices[].message.content')
 
@@ -401,10 +388,10 @@ while $running; do
 		request_prompt=${escaped_prompt//$'\n'/' '}
 
 		if [ "$CONTEXT" = true ]; then
-			build_chat_context "$chat_context" "$escaped_prompt"
+			build_chat_context "$request_prompt"
 		fi
 
-		request_to_completions "$request_prompt"
+		response=$(request_to_completions "$request_prompt")
 		handle_error "$response"
 		response_data=$(echo "$response" | jq -r '.choices[].text')
 
@@ -420,8 +407,7 @@ while $running; do
 		fi
 
 		if [ "$CONTEXT" = true ]; then
-			escaped_response_data=$(echo "$response_data" | sed 's/"/\\"/g')
-			maintain_chat_context "$chat_context" "$escaped_response_data"
+			maintain_chat_context "$escaped_response_data"
 		fi
 
 		timestamp=$(date +"%d/%m/%Y %H:%M")
