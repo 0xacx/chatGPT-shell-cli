@@ -375,7 +375,7 @@ while $running; do
 			echo "${response_data}" | glow -
 			#echo -e "${formatted_text}" 
 		else
-			echo -e "${CHATGPT_CYAN_LABEL}${response_data}" | fold -s -w $COLUMNS
+			echo -e "${CHATGPT_CYAN_LABEL}${response_data}" | fold -s -w "$COLUMNS"
 		fi
 		add_assistant_response_to_chat_message "$(escape "$response_data")"
 
