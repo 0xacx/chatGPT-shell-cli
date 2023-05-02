@@ -13,7 +13,7 @@ PROCESSING_LABEL="\n\033[90mProcessing... \033[0m\033[0K\r"
 OVERWRITE_PROCESSING_LINE="             \033[0K\r"
 
 
-if [[ -z "$OPENAI_KEY" ]]; then
+if [[ -z "$OPENAI_API_KEY" ]]; then
 	echo "You need to set your OPENAI_KEY to use this script"
 	echo "You can set it temporarily by running this on your terminal: export OPENAI_KEY=YOUR_KEY_HERE"
 	exit 1
@@ -37,15 +37,34 @@ Commands:
   *If a command modifies your file system or dowloads external files the script will show a warning before executing.
 
 Options:
-  -i, --init-prompt - Provide initial chat prompt to use in context
-  --init-prompt-from-file - Provide initial prompt from file
-  -p, --prompt - Provide prompt instead of starting chat
-  --prompt-from-file - Provide prompt from file
-  -t, --temperature - Temperature
-  --max-tokens - Max number of tokens
-  -m, --model - Model
-  -s, --size - Image size. (The sizes that are accepted by the OpenAI API are 256x256, 512x512, 1024x1024)
-  -c, --chat-context - For models that do not support chat context by default (all models except gpt-3.5-turbo and gpt-4), you can enable chat context, for the model to remember your previous questions and its previous answers. It also makes models aware of todays date and what data it was trained on.
+  -i, --init-prompt          Provide initial chat prompt to use in context
+
+  --init-prompt-from-file    Provide initial prompt from file
+
+  -p, --prompt               Provide prompt instead of starting chat
+
+  --prompt-from-file         Provide prompt from file
+
+  -b, --big-prompt           Allow multi-line prompts during chat mode
+
+  -t, --temperature          Temperature
+
+  --max-tokens               Max number of tokens
+
+  -l, --list                 List available openAI models
+
+  -m, --model                Model to use
+
+  -s, --size                 Image size. (The sizes that are accepted by the
+                             OpenAI API are 256x256, 512x512, 1024x1024)
+
+  -c, --chat-context         For models that do not support chat context by
+                             default (all models except gpt-3.5-turbo and
+                             gpt-4), you can enable chat context, for the
+                             model to remember your previous questions and
+                             its previous answers. It also makes models
+                             aware of todays date and what data it was trained
+                             on.
 
 EOF
 }
@@ -60,6 +79,17 @@ handle_error() {
 	fi
 }
 
+# request to openAI API models endpoint. Returns a list of models
+# takes no input parameters
+list_models() {
+  models_response=$(curl https://api.openai.com/v1/models \
+    -sS \
+    -H "Authorization: Bearer $OPENAI_API_KEY")
+  handle_error "$models_response"
+  models_data=$(echo $models_response | jq -r -C '.data[] | {id, owned_by, created}')
+  echo -e "$OVERWRITE_PROCESSING_LINE"
+  echo -e "${CHATGPT_CYAN_LABEL}This is a list of models currently available at OpenAI API:\n ${models_data}"
+}
 # request to OpenAI API completions endpoint function
 # $1 should be the request prompt
 request_to_completions() {
@@ -68,7 +98,7 @@ request_to_completions() {
 	response=$(curl https://api.openai.com/v1/completions \
 		-sS \
 		-H 'Content-Type: application/json' \
-		-H "Authorization: Bearer $OPENAI_KEY" \
+		-H "Authorization: Bearer $OPENAI_API_KEY" \
 		-d '{
   			"model": "'"$MODEL"'",
   			"prompt": "'"${request_prompt}"'",
@@ -84,7 +114,7 @@ request_to_image() {
 	image_response=$(curl https://api.openai.com/v1/images/generations \
 		-sS \
 		-H 'Content-Type: application/json' \
-		-H "Authorization: Bearer $OPENAI_KEY" \
+		-H "Authorization: Bearer $OPENAI_API_KEY" \
 		-d '{
     		"prompt": "'"${prompt#*image:}"'",
     		"n": 1,
@@ -99,7 +129,7 @@ request_to_chat() {
 	response=$(curl https://api.openai.com/v1/chat/completions \
 		-sS \
 		-H 'Content-Type: application/json' \
-		-H "Authorization: Bearer $OPENAI_KEY" \
+		-H "Authorization: Bearer $OPENAI_API_KEY" \
 		-d '{
             "model": "'"$MODEL"'",
             "messages": [
@@ -224,6 +254,10 @@ while [[ "$#" -gt 0 ]]; do
 		shift
 		shift
 		;;
+	-l | --list)
+		list_models
+		exit 0
+		;;
 	-m | --model)
 		MODEL="$2"
 		shift
@@ -232,6 +266,10 @@ while [[ "$#" -gt 0 ]]; do
 	-s | --size)
 		SIZE="$2"
 		shift
+		shift
+		;;
+	-b | --big-prompt)
+		BIG_PROMPT=true
 		shift
 		;;
 	-c | --chat-context)
@@ -255,6 +293,14 @@ MAX_TOKENS=${MAX_TOKENS:-1024}
 MODEL=${MODEL:-gpt-3.5-turbo}
 SIZE=${SIZE:-512x512}
 CONTEXT=${CONTEXT:-false}
+BIG_PROMPT=${BIG_PROMPT:-false}
+
+# create our temp file for multi-line input
+if [ $BIG_PROMPT = true ]; then
+	USER_INPUT=$(mktemp)
+	trap 'rm -f ${USER_INPUT}' EXIT
+fi
+
 
 # create history file
 if [ ! -f ~/.chatgpt_history ]; then
@@ -279,9 +325,15 @@ fi
 while $running; do
 
 	if [ -z "$pipe_mode_prompt" ]; then
-		echo -e "\nEnter a prompt:"
-		read -e prompt
-		if [ "$prompt" != "exit" ] && [ "$prompt" != "q" ]; then
+		if [ $BIG_PROMPT = true ]; then
+			echo -e "\nEnter a prompt: (Press Enter then Ctrl-D to send)"
+			cat > "${USER_INPUT}"
+			prompt=$(sed -E ':a;N;$!ba;s/\r{0,1}\n/\\n/g' "${USER_INPUT}")
+		else
+			echo -e "\nEnter a prompt:"
+			read -e prompt
+		fi
+    if [[ ! $prompt =~ ^(exit|q)$ ]]; then
 			echo -ne $PROCESSING_LABEL
 		fi
 	else
@@ -291,7 +343,7 @@ while $running; do
 		CHATGPT_CYAN_LABEL=""
 	fi
 
-	if [ "$prompt" == "exit" ] || [ "$prompt" == "q" ]; then
+  if [[ $prompt =~ ^(exit|q)$ ]]; then
 		running=false
 	elif [[ "$prompt" =~ ^image: ]]; then
 		request_to_image "$prompt"
@@ -318,17 +370,11 @@ while $running; do
 	elif [[ "$prompt" == "history" ]]; then
 		echo -e "\n$(cat ~/.chatgpt_history)"
 	elif [[ "$prompt" == "models" ]]; then
-		models_response=$(curl https://api.openai.com/v1/models \
-			-sS \
-			-H "Authorization: Bearer $OPENAI_KEY")
-		handle_error "$models_response"
-		models_data=$(echo $models_response | jq -r -C '.data[] | {id, owned_by, created}')
-		echo -e "$OVERWRITE_PROCESSING_LINE"
-		echo -e "${CHATGPT_CYAN_LABEL}This is a list of models currently available at OpenAI API:\n ${models_data}"
+    list_models
 	elif [[ "$prompt" =~ ^model: ]]; then
 		models_response=$(curl https://api.openai.com/v1/models \
 			-sS \
-			-H "Authorization: Bearer $OPENAI_KEY")
+			-H "Authorization: Bearer $OPENAI_API_KEY")
 		handle_error "$models_response"
 		model_data=$(echo $models_response | jq -r -C '.data[] | select(.id=="'"${prompt#*model:}"'")')
 		echo -e "$OVERWRITE_PROCESSING_LINE"
