@@ -70,10 +70,10 @@ request_to_completions() {
 		-H 'Content-Type: application/json' \
 		-H "Authorization: Bearer $OPENAI_KEY" \
 		-d '{
-  			"model": "'"$MODEL"'",
-  			"prompt": "'"$prompt"'",
-  			"max_tokens": '$MAX_TOKENS',
-  			"temperature": '$TEMPERATURE'
+			"model": "'"$MODEL"'",
+			"prompt": "'"$prompt"'",
+			"max_tokens": '$MAX_TOKENS',
+			"temperature": '$TEMPERATURE'
 			}'
 }
 
@@ -86,9 +86,9 @@ request_to_image() {
 		-H 'Content-Type: application/json' \
 		-H "Authorization: Bearer $OPENAI_KEY" \
 		-d '{
-    		"prompt": "'"${prompt#*image:}"'",
-    		"n": 1,
-    		"size": "'"$SIZE"'"
+			"prompt": "'"${prompt#*image:}"'",
+			"n": 1,
+			"size": "'"$SIZE"'"
 			}')
 }
 
@@ -101,14 +101,14 @@ request_to_chat() {
 		-H 'Content-Type: application/json' \
 		-H "Authorization: Bearer $OPENAI_KEY" \
 		-d '{
-            "model": "'"$MODEL"'",
-            "messages": [
-                {"role": "system", "content": "'"$SYSTEM_PROMPT"'"},
-                '"$message"'
-                ],
-            "max_tokens": '$MAX_TOKENS',
-            "temperature": '$TEMPERATURE'
-            }'
+			"model": "'"$MODEL"'",
+			"messages": [
+				{"role": "system", "content": "'"$SYSTEM_PROMPT"'"},
+				'"$message"'
+				],
+			"max_tokens": '$MAX_TOKENS',
+			"temperature": '$TEMPERATURE'
+			}'
 }
 
 # build chat context before each request for /completions (all models except
@@ -125,7 +125,7 @@ build_chat_context() {
 }
 
 escape(){
-  echo "$1" | jq -Rrs 'tojson[1:-1]'
+	echo "$1" | jq -Rrs 'tojson[1:-1]'
 }
 
 # maintain chat context function for /completions (all models except
