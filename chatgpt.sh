@@ -13,7 +13,7 @@ PROCESSING_LABEL="\n\033[90mProcessing... \033[0m\033[0K\r"
 OVERWRITE_PROCESSING_LINE="             \033[0K\r"
 
 
-if [[ -z "$OPENAI_API_KEY" ]]; then
+if [[ -z "$OPENAI_KEY" ]]; then
 	echo "You need to set your OPENAI_KEY to use this script"
 	echo "You can set it temporarily by running this on your terminal: export OPENAI_KEY=YOUR_KEY_HERE"
 	exit 1
@@ -84,7 +84,7 @@ handle_error() {
 list_models() {
   models_response=$(curl https://api.openai.com/v1/models \
     -sS \
-    -H "Authorization: Bearer $OPENAI_API_KEY")
+    -H "Authorization: Bearer $OPENAI_KEY")
   handle_error "$models_response"
   models_data=$(echo $models_response | jq -r -C '.data[] | {id, owned_by, created}')
   echo -e "$OVERWRITE_PROCESSING_LINE"
@@ -98,7 +98,7 @@ request_to_completions() {
 	response=$(curl https://api.openai.com/v1/completions \
 		-sS \
 		-H 'Content-Type: application/json' \
-		-H "Authorization: Bearer $OPENAI_API_KEY" \
+		-H "Authorization: Bearer $OPENAI_KEY" \
 		-d '{
   			"model": "'"$MODEL"'",
   			"prompt": "'"${request_prompt}"'",
@@ -114,7 +114,7 @@ request_to_image() {
 	image_response=$(curl https://api.openai.com/v1/images/generations \
 		-sS \
 		-H 'Content-Type: application/json' \
-		-H "Authorization: Bearer $OPENAI_API_KEY" \
+		-H "Authorization: Bearer $OPENAI_KEY" \
 		-d '{
     		"prompt": "'"${prompt#*image:}"'",
     		"n": 1,
@@ -129,7 +129,7 @@ request_to_chat() {
 	response=$(curl https://api.openai.com/v1/chat/completions \
 		-sS \
 		-H 'Content-Type: application/json' \
-		-H "Authorization: Bearer $OPENAI_API_KEY" \
+		-H "Authorization: Bearer $OPENAI_KEY" \
 		-d '{
             "model": "'"$MODEL"'",
             "messages": [
@@ -370,11 +370,11 @@ while $running; do
 	elif [[ "$prompt" == "history" ]]; then
 		echo -e "\n$(cat ~/.chatgpt_history)"
 	elif [[ "$prompt" == "models" ]]; then
-    list_models
+		list_models
 	elif [[ "$prompt" =~ ^model: ]]; then
 		models_response=$(curl https://api.openai.com/v1/models \
 			-sS \
-			-H "Authorization: Bearer $OPENAI_API_KEY")
+			-H "Authorization: Bearer $OPENAI_KEY")
 		handle_error "$models_response"
 		model_data=$(echo $models_response | jq -r -C '.data[] | select(.id=="'"${prompt#*model:}"'")')
 		echo -e "$OVERWRITE_PROCESSING_LINE"
