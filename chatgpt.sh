@@ -12,7 +12,6 @@ CHATGPT_CYAN_LABEL="\033[36mchatgpt \033[0m"
 PROCESSING_LABEL="\n\033[90mProcessing... \033[0m\033[0K\r"
 OVERWRITE_PROCESSING_LINE="             \033[0K\r"
 
-
 if [[ -z "$OPENAI_KEY" ]]; then
 	echo "You need to set your OPENAI_KEY to use this script"
 	echo "You can set it temporarily by running this on your terminal: export OPENAI_KEY=YOUR_KEY_HERE"
@@ -82,13 +81,13 @@ handle_error() {
 # request to openAI API models endpoint. Returns a list of models
 # takes no input parameters
 list_models() {
-  models_response=$(curl https://api.openai.com/v1/models \
-    -sS \
-    -H "Authorization: Bearer $OPENAI_KEY")
-  handle_error "$models_response"
-  models_data=$(echo $models_response | jq -r -C '.data[] | {id, owned_by, created}')
-  echo -e "$OVERWRITE_PROCESSING_LINE"
-  echo -e "${CHATGPT_CYAN_LABEL}This is a list of models currently available at OpenAI API:\n ${models_data}"
+	models_response=$(curl https://api.openai.com/v1/models \
+		-sS \
+		-H "Authorization: Bearer $OPENAI_KEY")
+	handle_error "$models_response"
+	models_data=$(echo $models_response | jq -r -C '.data[] | {id, owned_by, created}')
+	echo -e "$OVERWRITE_PROCESSING_LINE"
+	echo -e "${CHATGPT_CYAN_LABEL}This is a list of models currently available at OpenAI API:\n ${models_data}"
 }
 # request to OpenAI API completions endpoint function
 # $1 should be the request prompt
@@ -301,7 +300,6 @@ if [ $BIG_PROMPT = true ]; then
 	trap 'rm -f ${USER_INPUT}' EXIT
 fi
 
-
 # create history file
 if [ ! -f ~/.chatgpt_history ]; then
 	touch ~/.chatgpt_history
@@ -327,13 +325,13 @@ while $running; do
 	if [ -z "$pipe_mode_prompt" ]; then
 		if [ $BIG_PROMPT = true ]; then
 			echo -e "\nEnter a prompt: (Press Enter then Ctrl-D to send)"
-			cat > "${USER_INPUT}"
+			cat >"${USER_INPUT}"
 			prompt=$(sed -E ':a;N;$!ba;s/\r{0,1}\n/\\n/g' "${USER_INPUT}")
 		else
 			echo -e "\nEnter a prompt:"
 			read -e prompt
 		fi
-    if [[ ! $prompt =~ ^(exit|q)$ ]]; then
+		if [[ ! $prompt =~ ^(exit|q)$ ]]; then
 			echo -ne $PROCESSING_LABEL
 		fi
 	else
@@ -343,7 +341,7 @@ while $running; do
 		CHATGPT_CYAN_LABEL=""
 	fi
 
-  if [[ $prompt =~ ^(exit|q)$ ]]; then
+	if [[ $prompt =~ ^(exit|q)$ ]]; then
 		running=false
 	elif [[ "$prompt" =~ ^image: ]]; then
 		request_to_image "$prompt"
@@ -431,7 +429,7 @@ while $running; do
 		if command -v glow &>/dev/null; then
 			echo -e "${CHATGPT_CYAN_LABEL}"
 			echo "${response_data}" | glow -
-			#echo -e "${formatted_text}" 
+			#echo -e "${formatted_text}"
 		else
 			echo -e "${CHATGPT_CYAN_LABEL}${response_data}" | fold -s -w $COLUMNS
 		fi
@@ -460,7 +458,7 @@ while $running; do
 			echo -e "${CHATGPT_CYAN_LABEL}"
 			echo "${response_data}" | glow -
 		else
-		# else remove empty lines and print
+			# else remove empty lines and print
 			formatted_text=$(echo "${response_data}" | sed '1,2d; s/^A://g')
 			echo -e "${CHATGPT_CYAN_LABEL}${formatted_text}" | fold -s -w $COLUMNS
 		fi
