@@ -153,8 +153,8 @@ build_chat_context() {
 	fi
 }
 
-escape(){
-  echo "$1" | jq -Rrs 'tojson[1:-1]'
+escape() {
+	echo "$1" | jq -Rrs 'tojson[1:-1]'
 }
 
 # maintain chat context function for /completions (all models except
@@ -290,7 +290,7 @@ MULTI_LINE_PROMPT=${MULTI_LINE_PROMPT:-false}
 
 # create our temp file for multi-line input
 if [ $MULTI_LINE_PROMPT = true ]; then
-	USER_INPUT=$(mktemp)
+	USER_INPUT_TEMP_FILE=$(mktemp)
 	trap 'rm -f ${USER_INPUT}' EXIT
 fi
 
@@ -319,8 +319,9 @@ while $running; do
 	if [ -z "$pipe_mode_prompt" ]; then
 		if [ $MULTI_LINE_PROMPT = true ]; then
 			echo -e "\nEnter a prompt: (Press Enter then Ctrl-D to send)"
-			cat >"${USER_INPUT}"
-			prompt=$(sed -E ':a;N;$!ba;s/\r{0,1}\n/\\n/g' "${USER_INPUT}")
+			cat > "${USER_INPUT_TEMP_FILE}"
+			input_from_temp_file=$(cat "${USER_INPUT_TEMP_FILE}")
+			prompt=$(escape "$input_from_temp_file")
 		else
 			echo -e "\nEnter a prompt:"
 			read -e prompt
@@ -417,7 +418,6 @@ while $running; do
 		if command -v glow &>/dev/null; then
 			echo -e "${CHATGPT_CYAN_LABEL}"
 			echo "${response_data}" | glow -
-			#echo -e "${formatted_text}"
 		else
 			echo -e "${CHATGPT_CYAN_LABEL}${response_data}" | fold -s -w "$COLUMNS"
 		fi
