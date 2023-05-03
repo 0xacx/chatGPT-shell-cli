@@ -171,6 +171,3 @@ Contributions are very welcome!
 If you have ideas or need help to get started join the [Discord server](https://discord.gg/fwfYAZWKqu)
 
 ![Discord](https://img.shields.io/discord/1090696025162928158?label=Discord&style=for-the-badge)
-
-
-[![visitors](https://visitor-badge.glitch.me/badge?page_id=0xacx/chatGPT-shell-cli&left_color=black&right_color=red)](https://visitor-badge.glitch.me)
