@@ -97,7 +97,7 @@ request_to_image() {
 request_to_chat() {
 	message="$1"
 	# escape quotation marks and newlines in the prompt
-	escaped_prompt=$(echo "$SYSTEM_PROMPT" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+	escaped_system_prompt=$(echo "$SYSTEM_PROMPT" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
 	response=$(curl https://api.openai.com/v1/chat/completions \
 		-sS \
 		-H 'Content-Type: application/json' \
