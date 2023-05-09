@@ -12,7 +12,6 @@ CHATGPT_CYAN_LABEL="\033[36mchatgpt \033[0m"
 PROCESSING_LABEL="\n\033[90mProcessing... \033[0m\033[0K\r"
 OVERWRITE_PROCESSING_LINE="             \033[0K\r"
 
-
 if [[ -z "$OPENAI_KEY" ]]; then
 	echo "You need to set your OPENAI_KEY to use this script"
 	echo "You can set it temporarily by running this on your terminal: export OPENAI_KEY=YOUR_KEY_HERE"
@@ -37,15 +36,34 @@ Commands:
   *If a command modifies your file system or dowloads external files the script will show a warning before executing.
 
 Options:
-  -i, --init-prompt - Provide initial chat prompt to use in context
-  --init-prompt-from-file - Provide initial prompt from file
-  -p, --prompt - Provide prompt instead of starting chat
-  --prompt-from-file - Provide prompt from file
-  -t, --temperature - Temperature
-  --max-tokens - Max number of tokens
-  -m, --model - Model
-  -s, --size - Image size. (The sizes that are accepted by the OpenAI API are 256x256, 512x512, 1024x1024)
-  -c, --chat-context - For models that do not support chat context by default (all models except gpt-3.5-turbo and gpt-4), you can enable chat context, for the model to remember your previous questions and its previous answers. It also makes models aware of todays date and what data it was trained on.
+  -i, --init-prompt          Provide initial chat prompt to use in context
+
+  --init-prompt-from-file    Provide initial prompt from file
+
+  -p, --prompt               Provide prompt instead of starting chat
+
+  --prompt-from-file         Provide prompt from file
+
+  -b, --big-prompt           Allow multi-line prompts during chat mode
+
+  -t, --temperature          Temperature
+
+  --max-tokens               Max number of tokens
+
+  -l, --list                 List available openAI models
+
+  -m, --model                Model to use
+
+  -s, --size                 Image size. (The sizes that are accepted by the
+                             OpenAI API are 256x256, 512x512, 1024x1024)
+
+  -c, --chat-context         For models that do not support chat context by
+                             default (all models except gpt-3.5-turbo and
+                             gpt-4), you can enable chat context, for the
+                             model to remember your previous questions and
+                             its previous answers. It also makes models
+                             aware of todays date and what data it was trained
+                             on.
 
 EOF
 }
@@ -54,33 +72,44 @@ EOF
 # $1 should be the response body
 handle_error() {
 	if echo "$1" | jq -e '.error' >/dev/null; then
-		echo -e "Your request to Open AI API failed: \033[0;31m$(echo $1 | jq -r '.error.type')\033[0m"
-		echo $1 | jq -r '.error.message'
+		echo -e "Your request to Open AI API failed: \033[0;31m$(echo "$1" | jq -r '.error.type')\033[0m"
+		echo "$1" | jq -r '.error.message'
 		exit 1
 	fi
 }
 
+# request to openAI API models endpoint. Returns a list of models
+# takes no input parameters
+list_models() {
+	models_response=$(curl https://api.openai.com/v1/models \
+		-sS \
+		-H "Authorization: Bearer $OPENAI_KEY")
+	handle_error "$models_response"
+	models_data=$(echo $models_response | jq -r -C '.data[] | {id, owned_by, created}')
+	echo -e "$OVERWRITE_PROCESSING_LINE"
+	echo -e "${CHATGPT_CYAN_LABEL}This is a list of models currently available at OpenAI API:\n ${models_data}"
+}
 # request to OpenAI API completions endpoint function
 # $1 should be the request prompt
 request_to_completions() {
-	request_prompt="$1"
+	local prompt="$1"
 
-	response=$(curl https://api.openai.com/v1/completions \
+	curl https://api.openai.com/v1/completions \
 		-sS \
 		-H 'Content-Type: application/json' \
 		-H "Authorization: Bearer $OPENAI_KEY" \
 		-d '{
   			"model": "'"$MODEL"'",
-  			"prompt": "'"${request_prompt}"'",
+  			"prompt": "'"$prompt"'",
   			"max_tokens": '$MAX_TOKENS',
   			"temperature": '$TEMPERATURE'
-			}')
+			}'
 }
 
 # request to OpenAI API image generations endpoint function
 # $1 should be the prompt
 request_to_image() {
-	prompt="$1"
+	local prompt="$1"
 	image_response=$(curl https://api.openai.com/v1/images/generations \
 		-sS \
 		-H 'Content-Type: application/json' \
@@ -95,50 +124,51 @@ request_to_image() {
 # request to OpenAPI API chat completion endpoint function
 # $1 should be the message(s) formatted with role and content
 request_to_chat() {
-	message="$1"
+	local message="$1"
 	# escape quotation marks and newlines in the prompt
 	escaped_system_prompt=$(echo "$SYSTEM_PROMPT" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
-	response=$(curl https://api.openai.com/v1/chat/completions \
+	curl https://api.openai.com/v1/chat/completions \
 		-sS \
 		-H 'Content-Type: application/json' \
 		-H "Authorization: Bearer $OPENAI_KEY" \
 		-d '{
             "model": "'"$MODEL"'",
             "messages": [
-                {"role": "system", "content": "'"$escaped_prompt"'"},
+                {"role": "system", "content": "'"$escaped_system_prompt"'"},
                 '"$message"'
                 ],
             "max_tokens": '$MAX_TOKENS',
             "temperature": '$TEMPERATURE'
-            }')
+            }'
 }
 
 # build chat context before each request for /completions (all models except
 # gpt turbo and gpt 4)
-# $1 should be the chat context
-# $2 should be the escaped prompt
+# $1 should be the escaped request prompt,
+# it extends $chat_context
 build_chat_context() {
-	chat_context="$1"
-	escaped_prompt="$2"
+	local escaped_request_prompt="$1"
 	if [ -z "$chat_context" ]; then
-		chat_context="$CHAT_INIT_PROMPT\nQ: $escaped_prompt"
+		chat_context="$CHAT_INIT_PROMPT\nQ: $escaped_request_prompt"
 	else
-		chat_context="$chat_context\nQ: $escaped_prompt"
+		chat_context="$chat_context\nQ: $escaped_request_prompt"
 	fi
-	request_prompt="${chat_context//$'\n'/\\n}"
+}
+
+escape() {
+	echo "$1" | jq -Rrs 'tojson[1:-1]'
 }
 
 # maintain chat context function for /completions (all models except
 # gpt turbo and gpt 4)
 # builds chat context from response,
 # keeps chat context length under max token limit
-# $1 should be the chat context
-# $2 should be the response data (only the text)
+# * $1 should be the escaped response data
+# * it extends $chat_context
 maintain_chat_context() {
-	chat_context="$1"
-	response_data="$2"
+	local escaped_response_data="$1"
 	# add response to chat context as answer
-	chat_context="$chat_context${chat_context:+\n}\nA: ${response_data//$'\n'/\\n}"
+	chat_context="$chat_context${chat_context:+\n}\nA: $escaped_response_data"
 	# check prompt length, 1 word =~ 1.3 tokens
 	# reserving 100 tokens for next user prompt
 	while (($(echo "$chat_context" | wc -c) * 1, 3 > (MAX_TOKENS - 100))); do
@@ -151,36 +181,29 @@ maintain_chat_context() {
 
 # build user chat message function for /chat/completions (gpt models)
 # builds chat message before request,
-# $1 should be the chat message
-# $2 should be the escaped prompt
+# $1 should be the escaped request prompt,
+# it extends $chat_message
 build_user_chat_message() {
-	chat_message="$1"
-	escaped_prompt="$2"
+	local escaped_request_prompt="$1"
 	if [ -z "$chat_message" ]; then
-		chat_message="{\"role\": \"user\", \"content\": \"$escaped_prompt\"}"
+		chat_message="{\"role\": \"user\", \"content\": \"$escaped_request_prompt\"}"
 	else
-		chat_message="$chat_message, {\"role\": \"user\", \"content\": \"$escaped_prompt\"}"
+		chat_message="$chat_message, {\"role\": \"user\", \"content\": \"$escaped_request_prompt\"}"
 	fi
-
-	request_prompt="$chat_message"
 }
 
 # adds the assistant response to the message in (chatml) format
 # for /chat/completions (gpt models)
 # keeps messages length under max token limit
-# $1 should be the chat message
-# $2 should be the response data (only the text)
+# * $1 should be the escaped response data
+# * it extends and potentially shrinks $chat_message
 add_assistant_response_to_chat_message() {
-	chat_message="$1"
-	local local_response_data="$2"
-
-	# replace new line characters from response with space
-	local_response_data=$(echo "$local_response_data" | tr '\n' ' ')
+	local escaped_response_data="$1"
 	# add response to chat context as answer
-	chat_message="$chat_message, {\"role\": \"assistant\", \"content\": \"$local_response_data\"}"
+	chat_message="$chat_message, {\"role\": \"assistant\", \"content\": \"$escaped_response_data\"}"
 
 	# transform to json array to parse with jq
-	chat_message_json="[ $chat_message ]"
+	local chat_message_json="[ $chat_message ]"
 	# check prompt length, 1 word =~ 1.3 tokens
 	# reserving 100 tokens for next user prompt
 	while (($(echo "$chat_message" | wc -c) * 1, 3 > (MAX_TOKENS - 100))); do
@@ -226,6 +249,10 @@ while [[ "$#" -gt 0 ]]; do
 		shift
 		shift
 		;;
+	-l | --list)
+		list_models
+		exit 0
+		;;
 	-m | --model)
 		MODEL="$2"
 		shift
@@ -234,6 +261,10 @@ while [[ "$#" -gt 0 ]]; do
 	-s | --size)
 		SIZE="$2"
 		shift
+		shift
+		;;
+	--multi-line-prompt)
+		MULTI_LINE_PROMPT=true
 		shift
 		;;
 	-c | --chat-context)
@@ -257,6 +288,13 @@ MAX_TOKENS=${MAX_TOKENS:-1024}
 MODEL=${MODEL:-gpt-3.5-turbo}
 SIZE=${SIZE:-512x512}
 CONTEXT=${CONTEXT:-false}
+MULTI_LINE_PROMPT=${MULTI_LINE_PROMPT:-false}
+
+# create our temp file for multi-line input
+if [ $MULTI_LINE_PROMPT = true ]; then
+	USER_INPUT_TEMP_FILE=$(mktemp)
+	trap 'rm -f ${USER_INPUT}' EXIT
+fi
 
 # create history file
 if [ ! -f ~/.chatgpt_history ]; then
@@ -281,9 +319,16 @@ fi
 while $running; do
 
 	if [ -z "$pipe_mode_prompt" ]; then
-		echo -e "\nEnter a prompt:"
-		read -e prompt
-		if [ "$prompt" != "exit" ] && [ "$prompt" != "q" ]; then
+		if [ $MULTI_LINE_PROMPT = true ]; then
+			echo -e "\nEnter a prompt: (Press Enter then Ctrl-D to send)"
+			cat > "${USER_INPUT_TEMP_FILE}"
+			input_from_temp_file=$(cat "${USER_INPUT_TEMP_FILE}")
+			prompt=$(escape "$input_from_temp_file")
+		else
+			echo -e "\nEnter a prompt:"
+			read -e prompt
+		fi
+		if [[ ! $prompt =~ ^(exit|q)$ ]]; then
 			echo -ne $PROCESSING_LABEL
 		fi
 	else
@@ -293,12 +338,12 @@ while $running; do
 		CHATGPT_CYAN_LABEL=""
 	fi
 
-	if [ "$prompt" == "exit" ] || [ "$prompt" == "q" ]; then
+	if [[ $prompt =~ ^(exit|q)$ ]]; then
 		running=false
 	elif [[ "$prompt" =~ ^image: ]]; then
 		request_to_image "$prompt"
 		handle_error "$image_response"
-		image_url=$(echo $image_response | jq -r '.data[0].url')
+		image_url=$(echo "$image_response" | jq -r '.data[0].url')
 		echo -e "$OVERWRITE_PROCESSING_LINE"
 		echo -e "${CHATGPT_CYAN_LABEL}Your image was created. \n\nLink: ${image_url}\n"
 
@@ -320,13 +365,7 @@ while $running; do
 	elif [[ "$prompt" == "history" ]]; then
 		echo -e "\n$(cat ~/.chatgpt_history)"
 	elif [[ "$prompt" == "models" ]]; then
-		models_response=$(curl https://api.openai.com/v1/models \
-			-sS \
-			-H "Authorization: Bearer $OPENAI_KEY")
-		handle_error "$models_response"
-		models_data=$(echo $models_response | jq -r -C '.data[] | {id, owned_by, created}')
-		echo -e "$OVERWRITE_PROCESSING_LINE"
-		echo -e "${CHATGPT_CYAN_LABEL}This is a list of models currently available at OpenAI API:\n ${models_data}"
+		list_models
 	elif [[ "$prompt" =~ ^model: ]]; then
 		models_response=$(curl https://api.openai.com/v1/models \
 			-sS \
@@ -336,15 +375,12 @@ while $running; do
 		echo -e "$OVERWRITE_PROCESSING_LINE"
 		echo -e "${CHATGPT_CYAN_LABEL}Complete details for model: ${prompt#*model:}\n ${model_data}"
 	elif [[ "$prompt" =~ ^command: ]]; then
-		# escape quotation marks
-		escaped_prompt=$(echo "$prompt" | sed 's/"/\\"/g')
-		# escape new lines
-		if [[ "$prompt" =~ ^command: ]]; then
-			escaped_prompt=${prompt#command:}
-			request_prompt=$COMMAND_GENERATION_PROMPT${escaped_prompt//$'\n'/' '}
-		fi
-		build_user_chat_message "$chat_message" "$request_prompt"
-		request_to_chat "$request_prompt"
+		# escape quotation marks, new lines, backslashes...
+		escaped_prompt=$(escape "$prompt")
+		escaped_prompt=${escaped_prompt#command:}
+		request_prompt=$COMMAND_GENERATION_PROMPT$escaped_prompt
+		build_user_chat_message "$request_prompt"
+		response=$(request_to_chat "$chat_message")
 		handle_error "$response"
 		response_data=$(echo $response | jq -r '.choices[].message.content')
 
@@ -365,20 +401,17 @@ while $running; do
 				eval $response_data
 			fi
 		fi
-		escaped_response_data=$(echo "$response_data" | sed 's/"/\\"/g')
-		add_assistant_response_to_chat_message "$chat_message" "$escaped_response_data"
+		add_assistant_response_to_chat_message "$(escape "$response_data")"
 
 		timestamp=$(date +"%d/%m/%Y %H:%M")
 		echo -e "$timestamp $prompt \n$response_data \n" >>~/.chatgpt_history
 
 	elif [[ "$MODEL" =~ ^gpt- ]]; then
-		# escape quotation marks
-		escaped_prompt=$(echo "$prompt" | sed 's/"/\\"/g')
-		# escape new lines
-		request_prompt=${escaped_prompt//$'\n'/' '}
+		# escape quotation marks, new lines, backslashes...
+		request_prompt=$(escape "$prompt")
 
-		build_user_chat_message "$chat_message" "$request_prompt"
-		request_to_chat "$request_prompt"
+		build_user_chat_message "$request_prompt"
+		response=$(request_to_chat "$chat_message")
 		handle_error "$response"
 		response_data=$(echo "$response" | jq -r '.choices[].message.content')
 
@@ -387,26 +420,22 @@ while $running; do
 		if command -v glow &>/dev/null; then
 			echo -e "${CHATGPT_CYAN_LABEL}"
 			echo "${response_data}" | glow -
-			#echo -e "${formatted_text}" 
 		else
-			echo -e "${CHATGPT_CYAN_LABEL}${response_data}" | fold -s -w $COLUMNS
+			echo -e "${CHATGPT_CYAN_LABEL}${response_data}" | fold -s -w "$COLUMNS"
 		fi
-		escaped_response_data=$(echo "$response_data" | sed 's/"/\\"/g')
-		add_assistant_response_to_chat_message "$chat_message" "$escaped_response_data"
+		add_assistant_response_to_chat_message "$(escape "$response_data")"
 
 		timestamp=$(date +"%d/%m/%Y %H:%M")
 		echo -e "$timestamp $prompt \n$response_data \n" >>~/.chatgpt_history
 	else
-		# escape quotation marks
-		escaped_prompt=$(echo "$prompt" | sed 's/"/\\"/g')
-		# escape new lines
-		request_prompt=${escaped_prompt//$'\n'/' '}
+		# escape quotation marks, new lines, backslashes...
+		request_prompt=$(escape "$prompt")
 
 		if [ "$CONTEXT" = true ]; then
-			build_chat_context "$chat_context" "$escaped_prompt"
+			build_chat_context "$request_prompt"
 		fi
 
-		request_to_completions "$request_prompt"
+		response=$(request_to_completions "$request_prompt")
 		handle_error "$response"
 		response_data=$(echo "$response" | jq -r '.choices[].text')
 
@@ -416,14 +445,13 @@ while $running; do
 			echo -e "${CHATGPT_CYAN_LABEL}"
 			echo "${response_data}" | glow -
 		else
-		# else remove empty lines and print
+			# else remove empty lines and print
 			formatted_text=$(echo "${response_data}" | sed '1,2d; s/^A://g')
 			echo -e "${CHATGPT_CYAN_LABEL}${formatted_text}" | fold -s -w $COLUMNS
 		fi
 
 		if [ "$CONTEXT" = true ]; then
-			escaped_response_data=$(echo "$response_data" | sed 's/"/\\"/g')
-			maintain_chat_context "$chat_context" "$escaped_response_data"
+			maintain_chat_context "$(escape "$response_data")"
 		fi
 
 		timestamp=$(date +"%d/%m/%Y %H:%M")
