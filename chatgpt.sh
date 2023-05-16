@@ -125,8 +125,8 @@ request_to_image() {
 # $1 should be the message(s) formatted with role and content
 request_to_chat() {
 	local message="$1"
-	# escape quotation marks and newlines in the prompt
-	escaped_system_prompt=$(echo "$SYSTEM_PROMPT" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+	escaped_system_prompt=$(escape "$SYSTEM_PROMPT")
+	
 	curl https://api.openai.com/v1/chat/completions \
 		-sS \
 		-H 'Content-Type: application/json' \
@@ -321,7 +321,7 @@ while $running; do
 	if [ -z "$pipe_mode_prompt" ]; then
 		if [ $MULTI_LINE_PROMPT = true ]; then
 			echo -e "\nEnter a prompt: (Press Enter then Ctrl-D to send)"
-			cat > "${USER_INPUT_TEMP_FILE}"
+			cat >"${USER_INPUT_TEMP_FILE}"
 			input_from_temp_file=$(cat "${USER_INPUT_TEMP_FILE}")
 			prompt=$(escape "$input_from_temp_file")
 		else
