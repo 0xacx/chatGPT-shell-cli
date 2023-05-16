@@ -125,6 +125,8 @@ request_to_image() {
 # $1 should be the message(s) formatted with role and content
 request_to_chat() {
 	local message="$1"
+	escaped_system_prompt=$(escape "$SYSTEM_PROMPT")
+	
 	curl https://api.openai.com/v1/chat/completions \
 		-sS \
 		-H 'Content-Type: application/json' \
@@ -132,7 +134,7 @@ request_to_chat() {
 		-d '{
             "model": "'"$MODEL"'",
             "messages": [
-                {"role": "system", "content": "'"$SYSTEM_PROMPT"'"},
+                {"role": "system", "content": "'"$escaped_system_prompt"'"},
                 '"$message"'
                 ],
             "max_tokens": '$MAX_TOKENS',
@@ -319,7 +321,7 @@ while $running; do
 	if [ -z "$pipe_mode_prompt" ]; then
 		if [ $MULTI_LINE_PROMPT = true ]; then
 			echo -e "\nEnter a prompt: (Press Enter then Ctrl-D to send)"
-			cat > "${USER_INPUT_TEMP_FILE}"
+			cat >"${USER_INPUT_TEMP_FILE}"
 			input_from_temp_file=$(cat "${USER_INPUT_TEMP_FILE}")
 			prompt=$(escape "$input_from_temp_file")
 		else
