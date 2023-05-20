@@ -9,8 +9,16 @@ SYSTEM_PROMPT="You are ChatGPT, a large language model trained by OpenAI. Answer
 COMMAND_GENERATION_PROMPT="You are a Command Line Interface expert and your task is to provide functioning shell commands. Return a CLI command and nothing else - do not send it in a code block, quotes, or anything else, just the pure text CONTAINING ONLY THE COMMAND. If possible, return a one-line bash command or chain many commands together. Return ONLY the command ready to run in the terminal. The command should do the following:"
 
 CHATGPT_CYAN_LABEL="\033[36mchatgpt \033[0m"
-PROCESSING_LABEL="\n\033[90mProcessing... \033[0m\033[0K\r"
-OVERWRITE_PROCESSING_LINE="             \033[0K\r"
+
+# set endlines according to used system
+SYSTEM=$(uname)
+if [ "$SYSTEM" = "Linux" ]; then
+	PROCESSING_LABEL="\n\033[90mProcessing... \033[0m\033[0K"
+	OVERWRITE_PROCESSING_LINE="             \033[0K"
+else
+	PROCESSING_LABEL="\n\033[90mProcessing... \033[0m\033[0K\r"
+	OVERWRITE_PROCESSING_LINE="             \033[0K\r"
+fi
 
 if [[ -z "$OPENAI_KEY" ]]; then
 	echo "You need to set your OPENAI_KEY to use this script"
@@ -32,7 +40,7 @@ Commands:
   models - To get a list of the models available at OpenAI API
   model: - To view all the information on a specific model, start a prompt with model: and the model id as it appears in the list of models. For example: "model:text-babbage:001" will get you all the fields for text-babbage:001 model
   command: - To get a command with the specified functionality and run it, just type "command:" and explain what you want to achieve. The script will always ask you if you want to execute the command. i.e. 
-  "command: show me all files in this directory that have more than 150 lines of code" 
+  "command: show me all files in this directory that have more than 150 lines of code"
   *If a command modifies your file system or dowloads external files the script will show a warning before executing.
 
 Options:
@@ -85,7 +93,7 @@ list_models() {
 		-sS \
 		-H "Authorization: Bearer $OPENAI_KEY")
 	handle_error "$models_response"
-	models_data=$(echo $models_response | jq -r -C '.data[] | {id, owned_by, created}')
+	models_data=$(echo "$models_response" | jq -r -C '.data[] | {id, owned_by, created}')
 	echo -e "$OVERWRITE_PROCESSING_LINE"
 	echo -e "${CHATGPT_CYAN_LABEL}This is a list of models currently available at OpenAI API:\n ${models_data}"
 }
@@ -101,8 +109,8 @@ request_to_completions() {
 		-d '{
   			"model": "'"$MODEL"'",
   			"prompt": "'"$prompt"'",
-  			"max_tokens": '$MAX_TOKENS',
-  			"temperature": '$TEMPERATURE'
+  			"max_tokens": '"$MAX_TOKENS"',
+  			"temperature": '"$TEMPERATURE"'
 			}'
 }
 
@@ -126,7 +134,6 @@ request_to_image() {
 request_to_chat() {
 	local message="$1"
 	escaped_system_prompt=$(escape "$SYSTEM_PROMPT")
-	
 	curl https://api.openai.com/v1/chat/completions \
 		-sS \
 		-H 'Content-Type: application/json' \
@@ -137,8 +144,8 @@ request_to_chat() {
                 {"role": "system", "content": "'"$escaped_system_prompt"'"},
                 '"$message"'
                 ],
-            "max_tokens": '$MAX_TOKENS',
-            "temperature": '$TEMPERATURE'
+            "max_tokens": '"$MAX_TOKENS"',
+            "temperature": '"$TEMPERATURE"'
             }'
 }
 
@@ -171,7 +178,7 @@ maintain_chat_context() {
 	chat_context="$chat_context${chat_context:+\n}\nA: $escaped_response_data"
 	# check prompt length, 1 word =~ 1.3 tokens
 	# reserving 100 tokens for next user prompt
-	while (($(echo "$chat_context" | wc -c) * 1, 3 > (MAX_TOKENS - 100))); do
+	while (("${#chat_context}" * 1, 3 > (MAX_TOKENS - 100))); do
 		# remove first/oldest QnA from prompt
 		chat_context=$(echo "$chat_context" | sed -n '/Q:/,$p' | tail -n +2)
 		# add init prompt so it is always on top
@@ -206,7 +213,7 @@ add_assistant_response_to_chat_message() {
 	local chat_message_json="[ $chat_message ]"
 	# check prompt length, 1 word =~ 1.3 tokens
 	# reserving 100 tokens for next user prompt
-	while (($(echo "$chat_message" | wc -c) * 1, 3 > (MAX_TOKENS - 100))); do
+	while (( "${#chat_message}" * 1, 3 > (MAX_TOKENS - 100))); do
 		# remove first/oldest QnA from prompt
 		chat_message=$(echo "$chat_message_json" | jq -c '.[2:] | .[] | {role, content}')
 	done
@@ -326,10 +333,10 @@ while $running; do
 			prompt=$(escape "$input_from_temp_file")
 		else
 			echo -e "\nEnter a prompt:"
-			read -e prompt
+			read -e -r prompt
 		fi
 		if [[ ! $prompt =~ ^(exit|q)$ ]]; then
-			echo -ne $PROCESSING_LABEL
+			echo -ne "$PROCESSING_LABEL"
 		fi
 	else
 		# set vars for pipe mode
@@ -348,16 +355,16 @@ while $running; do
 		echo -e "${CHATGPT_CYAN_LABEL}Your image was created. \n\nLink: ${image_url}\n"
 
 		if [[ "$TERM_PROGRAM" == "iTerm.app" ]]; then
-			curl -sS $image_url -o temp_image.png
+			curl -sS "$image_url" -o temp_image.png
 			imgcat temp_image.png
 			rm temp_image.png
 		elif [[ "$TERM" == "xterm-kitty" ]]; then
-			curl -sS $image_url -o temp_image.png
+			curl -sS "$image_url" -o temp_image.png
 			kitty +kitten icat temp_image.png
 			rm temp_image.png
 		else
 			echo "Would you like to open it? (Yes/No)"
-			read -e answer
+			read -e -r answer
 			if [ "$answer" == "Yes" ] || [ "$answer" == "yes" ] || [ "$answer" == "y" ] || [ "$answer" == "Y" ] || [ "$answer" == "ok" ]; then
 				open "${image_url}"
 			fi
@@ -371,7 +378,7 @@ while $running; do
 			-sS \
 			-H "Authorization: Bearer $OPENAI_KEY")
 		handle_error "$models_response"
-		model_data=$(echo $models_response | jq -r -C '.data[] | select(.id=="'"${prompt#*model:}"'")')
+		model_data=$(echo "$models_response" | jq -r -C '.data[] | select(.id=="'"${prompt#*model:}"'")')
 		echo -e "$OVERWRITE_PROCESSING_LINE"
 		echo -e "${CHATGPT_CYAN_LABEL}Complete details for model: ${prompt#*model:}\n ${model_data}"
 	elif [[ "$prompt" =~ ^command: ]]; then
@@ -382,7 +389,7 @@ while $running; do
 		build_user_chat_message "$request_prompt"
 		response=$(request_to_chat "$chat_message")
 		handle_error "$response"
-		response_data=$(echo $response | jq -r '.choices[].message.content')
+		response_data=$(echo "$response" | jq -r '.choices[].message.content')
 
 		if [[ "$prompt" =~ ^command: ]]; then
 			echo -e "$OVERWRITE_PROCESSING_LINE"
@@ -395,10 +402,10 @@ while $running; do
 				fi
 			done
 			echo "Would you like to execute it? (Yes/No)"
-			read run_answer
+			read -r run_answer
 			if [ "$run_answer" == "Yes" ] || [ "$run_answer" == "yes" ] || [ "$run_answer" == "y" ] || [ "$run_answer" == "Y" ]; then
 				echo -e "\nExecuting command: $response_data\n"
-				eval $response_data
+				eval "$response_data"
 			fi
 		fi
 		add_assistant_response_to_chat_message "$(escape "$response_data")"
