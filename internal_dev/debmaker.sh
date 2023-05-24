@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 ###############################################################################
 # Purpose: The purpose of this script is to simply generate a .deb file.
 # Once the .deb file is generated a copy is moved to /tmp.
