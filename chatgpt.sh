@@ -367,18 +367,20 @@ while $running; do
 	elif [[ "$prompt" == "models" ]]; then
 		list_models
 	elif [[ "$prompt" =~ ^recall: ]]; then
-		recall_prompts=${prompt#recall:}
+		recall_prompts=(${prompt#recall:})
 		file_contents=$(cat ~/.chatgpt_history)
 		print_block=false
 		while read -r line
 		do
 			if [[ $line =~ ^[0-9]{2}/[0-9]{2}/[0-9]{4} ]]; then
-				if [[ $line =~ $recall_prompts ]]; then
-					echo -e "$line"
-					print_block=true
-				else
-					print_block=false
-				fi
+				for recall_word in "${recall_prompts[@]}"; do
+					if ! [[ $line =~ $recall_word ]]; then
+						print_block=false
+						continue 2
+					fi
+				done
+				print_block=true
+				echo -e "$line"
 			elif [ "$print_block" = true ]; then
 				echo -e "$line"
 			fi
