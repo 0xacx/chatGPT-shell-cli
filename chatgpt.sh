@@ -366,6 +366,25 @@ while $running; do
 		echo -e "\n$(cat ~/.chatgpt_history)"
 	elif [[ "$prompt" == "models" ]]; then
 		list_models
+	elif [[ "$prompt" =~ ^recall: ]]; then
+		recall_prompts=(${prompt#recall:})
+		file_contents=$(cat ~/.chatgpt_history)
+		print_block=false
+		while read -r line
+		do
+			if [[ $line =~ ^[0-9]{2}/[0-9]{2}/[0-9]{4} ]]; then
+				for recall_word in "${recall_prompts[@]}"; do
+					if ! [[ $line =~ $recall_word ]]; then
+						print_block=false
+						continue 2
+					fi
+				done
+				print_block=true
+				echo -e "$line"
+			elif [ "$print_block" = true ]; then
+				echo -e "$line"
+			fi
+		done <<< "$file_contents"
 	elif [[ "$prompt" =~ ^model: ]]; then
 		models_response=$(curl https://api.openai.com/v1/models \
 			-sS \
