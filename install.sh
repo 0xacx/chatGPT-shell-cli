@@ -1,8 +1,11 @@
 #!/bin/bash
 
 if [[ $EUID -ne 0 ]]; then
-  echo "This script must be run as root"
-  exit 1
+  echo "Running as normal user, will install only for current user"
+  BINPATH="$HOME/.local/bin"
+else
+  echo "Running as root, will install system-wide"
+  BINPATH="/usr/local/bin"
 fi
 # Check dependencies
 if type curl &>/dev/null; then
@@ -21,8 +24,8 @@ fi
 # Installing imgcat if using iTerm
 if [[ "$TERM_PROGRAM" == "iTerm.app" ]]; then
   if [[ ! $(which imgcat) ]]; then
-    curl -sS https://iterm2.com/utilities/imgcat -o /usr/local/bin/imgcat
-    chmod +x /usr/local/bin/imgcat
+    curl -sS https://iterm2.com/utilities/imgcat -o "$BINPATH/imgcat"
+    chmod +x "$BINPATH/imgcat"
     echo "Installed imgcat"
   fi
 fi
@@ -30,23 +33,23 @@ fi
 # Installing magick if using kitty
 if [[ "$TERM" == "xterm-kitty" ]]; then
   if [[ ! $(which magick) ]]; then
-    curl -sS https://imagemagick.org/archive/binaries/magick -o /usr/local/bin/magick
-    chmod +x /usr/local/bin/magick
+    curl -sS https://imagemagick.org/archive/binaries/magick -o "$BINPATH/magick"
+    chmod +x "$BINPATH/magick"
     echo "Installed magick"
   fi
 fi
 
 # Installing chatgpt script
-curl -sS https://raw.githubusercontent.com/0xacx/chatGPT-shell-cli/main/chatgpt.sh -o /usr/local/bin/chatgpt
+curl -sS https://raw.githubusercontent.com/0xacx/chatGPT-shell-cli/main/chatgpt.sh -o "$BINPATH/chatgpt"
 
 # Replace open image command with xdg-open for linux systems
 if [[ "$OSTYPE" == "linux"* ]] || [[ "$OSTYPE" == "freebsd"* ]]; then
-  sed -i 's/open "\${image_url}"/xdg-open "\${image_url}"/g' '/usr/local/bin/chatgpt'
+  sed -i 's/open "\${image_url}"/xdg-open "\${image_url}"/g' "$BINPATH/chatgpt"
 fi
-chmod +x /usr/local/bin/chatgpt
-echo "Installed chatgpt script to /usr/local/bin/chatgpt"
+chmod +x "$BINPATH/chatgpt"
+echo "Installed chatgpt script to $BINPATH/chatgpt"
 
-echo "The script will add the OPENAI_KEY environment variable to your shell profile and add /usr/local/bin to your PATH"
+echo "The script will add the OPENAI_KEY environment variable to your shell profile and add $BINPATH to your PATH"
 echo "Would you like to continue? (Yes/No)"
 read -e answer
 if [ "$answer" == "Yes" ] || [ "$answer" == "yes" ] || [ "$answer" == "y" ] || [ "$answer" == "Y" ] || [ "$answer" == "ok" ]; then
@@ -57,32 +60,32 @@ if [ "$answer" == "Yes" ] || [ "$answer" == "yes" ] || [ "$answer" == "y" ] || [
   # zsh profile
   if [ -f ~/.zprofile ]; then
     echo "export OPENAI_KEY=$key" >>~/.zprofile
-    if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
-      echo 'export PATH=$PATH:/usr/local/bin' >>~/.zprofile
+    if [[ ":$PATH:" != *":$BINPATH:"* ]]; then
+      echo "export PATH=\$PATH:$BINPATH" >>~/.zprofile
     fi
     echo "OpenAI key and chatgpt path added to ~/.zprofile"
     source ~/.zprofile
   # zshrc profile for debian
   elif [ -f ~/.zshrc ]; then
     echo "export OPENAI_KEY=$key" >>~/.zshrc
-    if [[ ":$PATH:" == *":/usr/local/bin:"* ]]; then
-      echo 'export PATH=$PATH:/usr/local/bin' >>~/.zshrc
+    if [[ ":$PATH:" == *":$BINPATH:"* ]]; then
+      echo "export PATH=\$PATH:$BINPATH" >>~/.zshrc
     fi
     echo "OpenAI key and chatgpt path added to ~/.zshrc"
     source ~/.zshrc
   # bash profile mac
   elif [ -f ~/.bash_profile ]; then
     echo "export OPENAI_KEY=$key" >>~/.bash_profile
-    if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
-      echo 'export PATH=$PATH:/usr/local/bin' >>~/.bash_profile
+    if [[ ":$PATH:" != *":$BINPATH:"* ]]; then
+      echo "export PATH=\$PATH:$BINPATH" >>~/.bash_profile
     fi
     echo "OpenAI key and chatgpt path added to ~/.bash_profile"
     source ~/.bash_profile
   # profile ubuntu
   elif [ -f ~/.profile ]; then
     echo "export OPENAI_KEY=$key" >>~/.profile
-    if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
-      echo 'export PATH=$PATH:/usr/local/bin' >>~/.profile
+    if [[ ":$PATH:" != *":$BINPATH:"* ]]; then
+      echo "export PATH=\$PATH:$BINPATH" >>~/.profile
     fi
     echo "OpenAI key and chatgpt path added to ~/.profile"
     source ~/.profile
