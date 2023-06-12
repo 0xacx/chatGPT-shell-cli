@@ -23,7 +23,7 @@ fi
 
 # Installing imgcat if using iTerm
 if [[ "$TERM_PROGRAM" == "iTerm.app" ]]; then
-  if [[ ! $(which imgcat) ]]; then
+  if type imgcat &>/dev/null; then
     curl -sS https://iterm2.com/utilities/imgcat -o "$BINPATH/imgcat"
     chmod +x "$BINPATH/imgcat"
     echo "Installed imgcat"
@@ -32,7 +32,7 @@ fi
 
 # Installing magick if using kitty
 if [[ "$TERM" == "xterm-kitty" ]]; then
-  if [[ ! $(which magick) ]]; then
+  if type magick &>/dev/null; then
     curl -sS https://imagemagick.org/archive/binaries/magick -o "$BINPATH/magick"
     chmod +x "$BINPATH/magick"
     echo "Installed magick"
