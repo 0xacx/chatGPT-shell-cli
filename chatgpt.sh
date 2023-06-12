@@ -44,7 +44,7 @@ Options:
 
   --prompt-from-file         Provide prompt from file
 
-  -b, --big-prompt           Allow multi-line prompts during chat mode
+  --multi-line-prompt        Allow multi-line prompts during chat mode
 
   -t, --temperature          Temperature
 
@@ -328,7 +328,7 @@ while $running; do
 			echo -e "\nEnter a prompt:"
 			read -e prompt
 		fi
-		if [[ ! $prompt =~ ^(exit|q)$ ]]; then
+		if [[ ! $prompt =~ ^(exit|q)(\\n)?$ ]]; then
 			echo -ne $PROCESSING_LABEL
 		fi
 	else
@@ -338,7 +338,7 @@ while $running; do
 		CHATGPT_CYAN_LABEL=""
 	fi
 
-	if [[ $prompt =~ ^(exit|q)$ ]]; then
+	if [[ $prompt =~ ^(exit|q)(\\n)?$ ]]; then
 		running=false
 	elif [[ "$prompt" =~ ^image: ]]; then
 		request_to_image "$prompt"
