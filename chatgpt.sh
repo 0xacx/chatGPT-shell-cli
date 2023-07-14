@@ -316,6 +316,12 @@ else
 	pipe_mode_prompt+=$(cat -)
 fi
 
+function handle_ctrl_c {
+	# newline
+	echo ""
+}
+trap handle_ctrl_c INT
+
 while $running; do
 
 	if [ -z "$pipe_mode_prompt" ]; then
@@ -326,7 +332,17 @@ while $running; do
 			prompt=$(escape "$input_from_temp_file")
 		else
 			echo -e "\nEnter a prompt:"
-			read -e prompt
+			while true; do
+				prompt=$(read -e prompt && echo $prompt || exit 1)
+				# Ctrl-D
+				if [[ $? == 1 ]]; then
+					exit
+				fi
+				# Ctrl-C
+				if [ -n "$prompt" ]; then
+					break
+				fi
+			done
 		fi
 		if [[ ! $prompt =~ ^(exit|q)$ ]]; then
 			echo -ne $PROCESSING_LABEL
