@@ -310,7 +310,7 @@ if [ -n "$prompt" ]; then
 	pipe_mode_prompt=${prompt}
 # if input file_descriptor is a terminal, run on chat mode
 elif [ -t 0 ]; then
-	echo -e "Welcome to chatgpt. You can quit with '\033[36mexit\033[0m' or '\033[36mq\033[0m'."
+	echo -e "${OPENAI_WELCOME:-Welcome to chatgpt. You can quit with '\033[36mexit\033[0m' or '\033[36mq\033[0m'.}"
 # prompt from pipe or redirected stdin, run on pipe mode
 else
 	pipe_mode_prompt+=$(cat -)
@@ -320,12 +320,12 @@ while $running; do
 
 	if [ -z "$pipe_mode_prompt" ]; then
 		if [ $MULTI_LINE_PROMPT = true ]; then
-			echo -e "\nEnter a prompt: (Press Enter then Ctrl-D to send)"
+			echo -e "\n${OPENAI_MULTI_LINE_PROMPT:-Enter a prompt: (Press Enter then Ctrl-D to send)}"
 			cat >"${USER_INPUT_TEMP_FILE}"
 			input_from_temp_file=$(cat "${USER_INPUT_TEMP_FILE}")
 			prompt=$(escape "$input_from_temp_file")
 		else
-			echo -e "\nEnter a prompt:"
+			echo -e "\n${OPENAI_PROMPT:-Enter a prompt:}"
 			read -e prompt
 		fi
 		if [[ ! $prompt =~ ^(exit|q)$ ]]; then
