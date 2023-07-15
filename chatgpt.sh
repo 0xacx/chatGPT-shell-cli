@@ -124,22 +124,31 @@ request_to_image() {
 # request to OpenAPI API chat completion endpoint function
 # $1 should be the message(s) formatted with role and content
 request_to_chat() {
-	local message="$1"
 	escaped_system_prompt=$(escape "$SYSTEM_PROMPT")
+	if [ "$CONTEXT" = true ]; then
+        	local message=$([[ -s /tmp/chatgpt-last-session.json ]] && jq ". += [$1]" /tmp/chatgpt-last-session.json || "$1")
+    	else
+        	local message='[
+                    {"role": "system", "content": "'"$escaped_system_prompt"'"},
+                    '"$1"'
+                ]'
+	fi
+	local json='{
+            "model": "'"$MODEL"'",
+            "max_tokens": '$MAX_TOKENS',
+            "temperature": '$TEMPERATURE',
+            "messages": '$message'
+            }'
 	
-	curl https://api.openai.com/v1/chat/completions \
+	local response=$(curl https://api.openai.com/v1/chat/completions \
 		-sS \
 		-H 'Content-Type: application/json' \
 		-H "Authorization: Bearer $OPENAI_KEY" \
-		-d '{
-            "model": "'"$MODEL"'",
-            "messages": [
-                {"role": "system", "content": "'"$escaped_system_prompt"'"},
-                '"$message"'
-                ],
-            "max_tokens": '$MAX_TOKENS',
-            "temperature": '$TEMPERATURE'
-            }'
+		-d "$json")
+    	local response_message="$(echo $response | jq '.choices[0].message')"
+    	jq ".[0].messages += [.[1].choices[0].message] | .[0].messages" -s <(echo $json) <(echo $response) > /tmp/chatgpt-last-session.json
+
+    	echo $response
 }
 
 # build chat context before each request for /completions (all models except
@@ -218,14 +227,12 @@ while [[ "$#" -gt 0 ]]; do
 	-i | --init-prompt)
 		CHAT_INIT_PROMPT="$2"
 		SYSTEM_PROMPT="$2"
-		CONTEXT=true
 		shift
 		shift
 		;;
 	--init-prompt-from-file)
 		CHAT_INIT_PROMPT=$(cat "$2")
 		SYSTEM_PROMPT=$(cat "$2")
-		CONTEXT=true
 		shift
 		shift
 		;;
@@ -386,7 +393,7 @@ while $running; do
 
 		if [[ "$prompt" =~ ^command: ]]; then
 			echo -e "$OVERWRITE_PROCESSING_LINE"
-			echo -e "${CHATGPT_CYAN_LABEL} ${response_data}" | fold -s -w $COLUMNS
+			echo -e "${CHATGPT_CYAN_LABEL} ${response_data}" | fold -s -w ${COLUMNS:-80}
 			dangerous_commands=("rm" ">" "mv" "mkfs" ":(){:|:&};" "dd" "chmod" "wget" "curl")
 
 			for dangerous_command in "${dangerous_commands[@]}"; do
@@ -421,7 +428,7 @@ while $running; do
 			echo -e "${CHATGPT_CYAN_LABEL}"
 			echo "${response_data}" | glow -
 		else
-			echo -e "${CHATGPT_CYAN_LABEL}${response_data}" | fold -s -w "$COLUMNS"
+			echo -e "${CHATGPT_CYAN_LABEL}${response_data}" | fold -s -w "${COLUMNS:-80}"
 		fi
 		add_assistant_response_to_chat_message "$(escape "$response_data")"
 
@@ -447,7 +454,7 @@ while $running; do
 		else
 			# else remove empty lines and print
 			formatted_text=$(echo "${response_data}" | sed '1,2d; s/^A://g')
-			echo -e "${CHATGPT_CYAN_LABEL}${formatted_text}" | fold -s -w $COLUMNS
+			echo -e "${CHATGPT_CYAN_LABEL}${formatted_text}" | fold -s -w ${COLUMNS:-80}
 		fi
 
 		if [ "$CONTEXT" = true ]; then
