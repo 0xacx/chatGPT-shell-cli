@@ -44,7 +44,7 @@ Options:
 
   --prompt-from-file         Provide prompt from file
 
-  -b, --big-prompt           Allow multi-line prompts during chat mode
+  --multi-line-prompt        Allow multi-line prompts during chat mode
 
   -t, --temperature          Temperature
 
