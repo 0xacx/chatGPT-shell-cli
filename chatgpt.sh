@@ -12,9 +12,16 @@ CHATGPT_CYAN_LABEL="\033[36mchatgpt \033[0m"
 PROCESSING_LABEL="\n\033[90mProcessing... \033[0m\033[0K\r"
 OVERWRITE_PROCESSING_LINE="             \033[0K\r"
 
+# Check if we have a key path first
+if [[ -f "$OPENAI_API_KEY_PATH" ]]; then
+	# Set the key value to OPENAI_KEY
+	export OPENAI_KEY="$(cat $OPENAI_API_KEY_PATH)"
+fi
+
 if [[ -z "$OPENAI_KEY" ]]; then
 	echo "You need to set your OPENAI_KEY to use this script"
 	echo "You can set it temporarily by running this on your terminal: export OPENAI_KEY=YOUR_KEY_HERE"
+	echo "You may also specify the path to a key file instead: export OPENAI_API_KEY_PATH=/path/to/your/key.txt"
 	exit 1
 fi
 
