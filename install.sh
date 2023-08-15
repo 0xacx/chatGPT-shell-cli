@@ -4,6 +4,7 @@ if [[ $EUID -ne 0 ]]; then
   echo "This script must be run as root"
   exit 1
 fi
+
 # Check dependencies
 if type curl &>/dev/null; then
   echo "" &>/dev/null
@@ -54,7 +55,6 @@ if [ "$answer" == "Yes" ] || [ "$answer" == "yes" ] || [ "$answer" == "y" ] || [
   read -p "Please enter your OpenAI API key: " key
 
   # Adding OpenAI key to shell profile
-  # zsh profile
   if [ -f ~/.zprofile ]; then
     echo "export OPENAI_KEY=$key" >>~/.zprofile
     if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
@@ -62,7 +62,6 @@ if [ "$answer" == "Yes" ] || [ "$answer" == "yes" ] || [ "$answer" == "y" ] || [
     fi
     echo "OpenAI key and chatgpt path added to ~/.zprofile"
     source ~/.zprofile
-  # zshrc profile for debian
   elif [ -f ~/.zshrc ]; then
     echo "export OPENAI_KEY=$key" >>~/.zshrc
     if [[ ":$PATH:" == *":/usr/local/bin:"* ]]; then
@@ -70,7 +69,6 @@ if [ "$answer" == "Yes" ] || [ "$answer" == "yes" ] || [ "$answer" == "y" ] || [
     fi
     echo "OpenAI key and chatgpt path added to ~/.zshrc"
     source ~/.zshrc
-  # bash profile mac
   elif [ -f ~/.bash_profile ]; then
     echo "export OPENAI_KEY=$key" >>~/.bash_profile
     if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
@@ -78,7 +76,6 @@ if [ "$answer" == "Yes" ] || [ "$answer" == "yes" ] || [ "$answer" == "y" ] || [
     fi
     echo "OpenAI key and chatgpt path added to ~/.bash_profile"
     source ~/.bash_profile
-  # profile ubuntu
   elif [ -f ~/.profile ]; then
     echo "export OPENAI_KEY=$key" >>~/.profile
     if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
