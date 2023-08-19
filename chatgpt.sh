@@ -263,8 +263,8 @@ while [[ "$#" -gt 0 ]]; do
 		shift
 		shift
 		;;
-	--multi-line-prompt)
-		MULTI_LINE_PROMPT=true
+	-b | --big-prompt)
+		BIG_PROMPT=true
 		shift
 		;;
 	-c | --chat-context)
@@ -288,10 +288,10 @@ MAX_TOKENS=${MAX_TOKENS:-1024}
 MODEL=${MODEL:-gpt-3.5-turbo}
 SIZE=${SIZE:-512x512}
 CONTEXT=${CONTEXT:-false}
-MULTI_LINE_PROMPT=${MULTI_LINE_PROMPT:-false}
+BIG_PROMPT=${BIG_PROMPT:-false}
 
 # create our temp file for multi-line input
-if [ $MULTI_LINE_PROMPT = true ]; then
+if [ $BIG_PROMPT = true ]; then
 	USER_INPUT_TEMP_FILE=$(mktemp)
 	trap 'rm -f ${USER_INPUT}' EXIT
 fi
@@ -319,7 +319,7 @@ fi
 while $running; do
 
 	if [ -z "$pipe_mode_prompt" ]; then
-		if [ $MULTI_LINE_PROMPT = true ]; then
+		if [ $BIG_PROMPT = true ]; then
 			echo -e "\nEnter a prompt: (Press Enter then Ctrl-D to send)"
 			cat >"${USER_INPUT_TEMP_FILE}"
 			input_from_temp_file=$(cat "${USER_INPUT_TEMP_FILE}")
