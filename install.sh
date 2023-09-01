@@ -42,52 +42,39 @@ fi
 chmod +x /usr/local/bin/chatgpt
 echo "Installed chatgpt script to /usr/local/bin/chatgpt"
 
-echo "The script will add the OPENAI_KEY environment variable to your shell profile and add /usr/local/bin to your PATH"
-echo "Would you like to continue? (Yes/No)"
-read -e answer
-if [ "$answer" == "Yes" ] || [ "$answer" == "yes" ] || [ "$answer" == "y" ] || [ "$answer" == "Y" ] || [ "$answer" == "ok" ]; then
-  :
-else
-  echo "Please take a look at the instructions to install manually: https://github.com/0xacx/chatGPT-shell-cli/tree/main#manual-installation "
+echo "The script will add the OPENAI_KEY environment variable"
+echo "to your shell profile and /usr/local/bin to your PATH"
+read -ep "Would you like to continue? (Yes/No) " yn
+yn=${yn/Y/y}
+yn=${yn/ok/y}
+if ! test "${yn:0:1}" == "y"; then
+  echo
+  echo "Please take a look at the instructions to install manually:"
+  echo "https://github.com/0xacx/chatGPT-shell-cli/tree/main#manual-installation"
+  echo
   exit 0
 fi
 
 read -p "Please enter your OpenAI API key: " key
 
 # Adding OpenAI key to shell profile
-# zsh profile
-if [ -f ~/.zprofile ]; then
-  echo "export OPENAI_KEY=$key" >>~/.zprofile
-  if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
-    echo 'export PATH=$PATH:/usr/local/bin' >>~/.zprofile
+# RAF: .bashrc was missing, added + using a for loop
+envset=0
+for i in .zprofile .zshrc .bash_profile .bashrc .profile; do
+  if [ -f ~/$i ]; then
+    echo "export OPENAI_KEY=$key" >>~/$i
+    if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
+      echo 'export PATH=$PATH:/usr/local/bin' >>~/$i
+    fi
+    echo "OpenAI key and chatgpt path added to ~/$i"
+# RAF: sourcing an enviroment within a sub-shell does not affect
+#      the parent shell enviroment unless using source install.sh
+#   source ~/$i
+    envset=1
   fi
-  echo "OpenAI key and chatgpt path added to ~/.zprofile"
-  source ~/.zprofile
-# zshrc profile for debian
-elif [ -f ~/.zshrc ]; then
-  echo "export OPENAI_KEY=$key" >>~/.zshrc
-  if [[ ":$PATH:" == *":/usr/local/bin:"* ]]; then
-    echo 'export PATH=$PATH:/usr/local/bin' >>~/.zshrc
-  fi
-  echo "OpenAI key and chatgpt path added to ~/.zshrc"
-  source ~/.zshrc
-# bash profile mac
-elif [ -f ~/.bash_profile ]; then
-  echo "export OPENAI_KEY=$key" >>~/.bash_profile
-  if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
-    echo 'export PATH=$PATH:/usr/local/bin' >>~/.bash_profile
-  fi
-  echo "OpenAI key and chatgpt path added to ~/.bash_profile"
-  source ~/.bash_profile
-# profile ubuntu
-elif [ -f ~/.profile ]; then
-  echo "export OPENAI_KEY=$key" >>~/.profile
-  if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
-    echo 'export PATH=$PATH:/usr/local/bin' >>~/.profile
-  fi
-  echo "OpenAI key and chatgpt path added to ~/.profile"
-  source ~/.profile
-else
+done
+
+if [ $envset -eq 0 ]; then
   export OPENAI_KEY=$key
   echo "You need to add this to your shell profile: export OPENAI_KEY=$key"
 fi
