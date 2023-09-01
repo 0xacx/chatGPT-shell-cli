@@ -5,17 +5,13 @@ if [[ $EUID -ne 0 ]]; then
   exit 1
 fi
 # Check dependencies
-if type curl &>/dev/null; then
-  echo "" &>/dev/null
-else
+if ! type curl &>/dev/null; then
   echo "You need to install 'curl' to use the chatgpt script."
-  exit
+  exit 0
 fi
-if type jq &>/dev/null; then
-  echo "" &>/dev/null
-else
+if ! type jq &>/dev/null; then
   echo "You need to install 'jq' to use the chatgpt script."
-  exit
+  exit 0
 fi
 
 # Installing imgcat if using iTerm
@@ -50,49 +46,49 @@ echo "The script will add the OPENAI_KEY environment variable to your shell prof
 echo "Would you like to continue? (Yes/No)"
 read -e answer
 if [ "$answer" == "Yes" ] || [ "$answer" == "yes" ] || [ "$answer" == "y" ] || [ "$answer" == "Y" ] || [ "$answer" == "ok" ]; then
-
-  read -p "Please enter your OpenAI API key: " key
-
-  # Adding OpenAI key to shell profile
-  # zsh profile
-  if [ -f ~/.zprofile ]; then
-    echo "export OPENAI_KEY=$key" >>~/.zprofile
-    if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
-      echo 'export PATH=$PATH:/usr/local/bin' >>~/.zprofile
-    fi
-    echo "OpenAI key and chatgpt path added to ~/.zprofile"
-    source ~/.zprofile
-  # zshrc profile for debian
-  elif [ -f ~/.zshrc ]; then
-    echo "export OPENAI_KEY=$key" >>~/.zshrc
-    if [[ ":$PATH:" == *":/usr/local/bin:"* ]]; then
-      echo 'export PATH=$PATH:/usr/local/bin' >>~/.zshrc
-    fi
-    echo "OpenAI key and chatgpt path added to ~/.zshrc"
-    source ~/.zshrc
-  # bash profile mac
-  elif [ -f ~/.bash_profile ]; then
-    echo "export OPENAI_KEY=$key" >>~/.bash_profile
-    if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
-      echo 'export PATH=$PATH:/usr/local/bin' >>~/.bash_profile
-    fi
-    echo "OpenAI key and chatgpt path added to ~/.bash_profile"
-    source ~/.bash_profile
-  # profile ubuntu
-  elif [ -f ~/.profile ]; then
-    echo "export OPENAI_KEY=$key" >>~/.profile
-    if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
-      echo 'export PATH=$PATH:/usr/local/bin' >>~/.profile
-    fi
-    echo "OpenAI key and chatgpt path added to ~/.profile"
-    source ~/.profile
-  else
-    export OPENAI_KEY=$key
-    echo "You need to add this to your shell profile: export OPENAI_KEY=$key"
-  fi
-  echo "Installation complete"
-
+  :
 else
   echo "Please take a look at the instructions to install manually: https://github.com/0xacx/chatGPT-shell-cli/tree/main#manual-installation "
-  exit
+  exit 0
 fi
+
+read -p "Please enter your OpenAI API key: " key
+
+# Adding OpenAI key to shell profile
+# zsh profile
+if [ -f ~/.zprofile ]; then
+  echo "export OPENAI_KEY=$key" >>~/.zprofile
+  if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
+    echo 'export PATH=$PATH:/usr/local/bin' >>~/.zprofile
+  fi
+  echo "OpenAI key and chatgpt path added to ~/.zprofile"
+  source ~/.zprofile
+# zshrc profile for debian
+elif [ -f ~/.zshrc ]; then
+  echo "export OPENAI_KEY=$key" >>~/.zshrc
+  if [[ ":$PATH:" == *":/usr/local/bin:"* ]]; then
+    echo 'export PATH=$PATH:/usr/local/bin' >>~/.zshrc
+  fi
+  echo "OpenAI key and chatgpt path added to ~/.zshrc"
+  source ~/.zshrc
+# bash profile mac
+elif [ -f ~/.bash_profile ]; then
+  echo "export OPENAI_KEY=$key" >>~/.bash_profile
+  if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
+    echo 'export PATH=$PATH:/usr/local/bin' >>~/.bash_profile
+  fi
+  echo "OpenAI key and chatgpt path added to ~/.bash_profile"
+  source ~/.bash_profile
+# profile ubuntu
+elif [ -f ~/.profile ]; then
+  echo "export OPENAI_KEY=$key" >>~/.profile
+  if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
+    echo 'export PATH=$PATH:/usr/local/bin' >>~/.profile
+  fi
+  echo "OpenAI key and chatgpt path added to ~/.profile"
+  source ~/.profile
+else
+  export OPENAI_KEY=$key
+  echo "You need to add this to your shell profile: export OPENAI_KEY=$key"
+fi
+echo "Installation complete"
