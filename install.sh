@@ -60,18 +60,21 @@ read -p "Please enter your OpenAI API key: " key
 # Adding OpenAI key to shell profile
 # RAF: .bashrc was missing, added + using a for loop
 envset=0
-for i in .zprofile .zshrc .bash_profile .bashrc .profile; do
-  if [ -f ~/$i ]; then
-    echo "export OPENAI_KEY=$key" >>~/$i
-    if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
-      echo 'export PATH=$PATH:/usr/local/bin' >>~/$i
+for u in '' $SUDO_USER; do
+  for i in .zprofile .zshrc .bash_profile .bashrc .profile; do
+    pf=$(eval readlink -e ~$u/$i)
+    if [ -f "$pf" ]; then
+      echo "export OPENAI_KEY=$key" >> $pf
+      if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
+        echo 'export PATH=$PATH:/usr/local/bin' >> $pf
+      fi
+      echo "OpenAI key and chatgpt path added to ~$u/$i"
+  # RAF: sourcing an enviroment within a sub-shell does not affect
+  #      the parent shell enviroment unless using source install.sh
+  #   source ~/$i
+      envset=1
     fi
-    echo "OpenAI key and chatgpt path added to ~/$i"
-# RAF: sourcing an enviroment within a sub-shell does not affect
-#      the parent shell enviroment unless using source install.sh
-#   source ~/$i
-    envset=1
-  fi
+  done
 done
 
 if [ $envset -eq 0 ]; then
