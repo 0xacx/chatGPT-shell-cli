@@ -115,6 +115,7 @@ request_to_image() {
 		-H 'Content-Type: application/json' \
 		-H "Authorization: Bearer $OPENAI_KEY" \
 		-d '{
+			"model": "'"$MODEL"'",
     		"prompt": "'"${prompt#*image:}"'",
     		"n": 1,
     		"size": "'"$SIZE"'"
@@ -341,7 +342,8 @@ while $running; do
 	if [[ $prompt =~ ^(exit|q)$ ]]; then
 		running=false
 	elif [[ "$prompt" =~ ^image: ]]; then
-		request_to_image "$prompt"
+		escaped_prompt=$(escape "$prompt")
+		request_to_image "$escaped_prompt"
 		handle_error "$image_response"
 		image_url=$(echo "$image_response" | jq -r '.data[0].url')
 		echo -e "$OVERWRITE_PROCESSING_LINE"
