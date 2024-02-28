@@ -376,7 +376,7 @@ while $running; do
 		echo -e "$OVERWRITE_PROCESSING_LINE"
 		echo -e "${CHATGPT_CYAN_LABEL}Complete details for model: ${prompt#*model:}\n ${model_data}"
 	elif [[ "$prompt" =~ ^change_model: ]]; then
-    MODEL=${prompt#*change_model:}
+    		MODEL=${prompt#*change_model:}
 	elif [[ "$prompt" =~ ^command: ]]; then
 		# escape quotation marks, new lines, backslashes...
 		escaped_prompt=$(escape "$prompt")
