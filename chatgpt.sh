@@ -30,6 +30,7 @@ Commands:
   image: - To generate images, start a prompt with image: If you are using iTerm, you can view the image directly in the terminal. Otherwise the script will ask to open the image in your browser.
   history - To view your chat history
   models - To get a list of the models available at OpenAI API
+  current_model - To get the name of the current model
   model: - To view all the information on a specific model, start a prompt with model: and the model id as it appears in the list of models. For example: "model:text-babbage:001" will get you all the fields for text-babbage:001 model
   command: - To get a command with the specified functionality and run it, just type "command:" and explain what you want to achieve. The script will always ask you if you want to execute the command. i.e. 
   "command: show me all files in this directory that have more than 150 lines of code" 
@@ -374,6 +375,8 @@ while $running; do
 		model_data=$(echo $models_response | jq -r -C '.data[] | select(.id=="'"${prompt#*model:}"'")')
 		echo -e "$OVERWRITE_PROCESSING_LINE"
 		echo -e "${CHATGPT_CYAN_LABEL}Complete details for model: ${prompt#*model:}\n ${model_data}"
+	elif [[ "$prompt" == "current_model" ]]; then
+	  echo "$MODEL"
 	elif [[ "$prompt" =~ ^command: ]]; then
 		# escape quotation marks, new lines, backslashes...
 		escaped_prompt=$(escape "$prompt")
